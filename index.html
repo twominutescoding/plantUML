@@ -668,11 +668,12 @@ let currentTheme = '';
 
 // --- Tab system ---
 let nextTabId = 2;
-const sharedParam = new URLSearchParams(window.location.search).get('d');
+const sharedParam = window.location.hash.startsWith('#d=')
+  ? decodeURIComponent(window.location.hash.slice(3)) : null;
 const tabs = [{
   id: 1,
   name: 'Diagram 1',
-  code: sharedParam ? decodeURIComponent(sharedParam) : EXAMPLES.sequence,
+  code: sharedParam || EXAMPLES.sequence,
   encodedUrl: null
 }];
 let activeTabId = 1;
@@ -914,7 +915,7 @@ function newDiagram() {
 function shareLink() {
   const code = document.getElementById('code').value.trim();
   if (!code) { showToast('\u2715 Nothing to share'); return; }
-  const url = `${location.origin}${location.pathname}?d=${encodeURIComponent(code)}`;
+  const url = `${location.href.split('#')[0]}#d=${encodeURIComponent(code)}`;
   navigator.clipboard.writeText(url).then(() => {
     showToast('\u2713 Link copied to clipboard');
     const btn = document.getElementById('btn-share');
