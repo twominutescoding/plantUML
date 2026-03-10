@@ -842,11 +842,11 @@ const HL_KW_RE = new RegExp(`\\b(${HL_KEYWORDS.join('|')})\\b`, 'g');
 function highlightLine(raw) {
   let s = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   if (/^\s*'/.test(s)) return `<span class="hl-comment">${s}</span>`;
+  s = s.replace(HL_KW_RE, '<span class="hl-keyword">$1</span>');
   s = s.replace(/(@(?:start|end)\w+)/g, '<span class="hl-delim">$1</span>');
   s = s.replace(/(!\w+)/g, '<span class="hl-directive">$1</span>');
   s = s.replace(/(->+|<-+|--\|>|<\|--|\.\.>|<\.\.|<->|<\|\.\.|\.\.\|>|\*--|o--|--\*|--o|-(?:up|down|left|right)->|<-(?:up|down|left|right)-)/g, '<span class="hl-arrow">$1</span>');
   s = s.replace(/(==\s*.+?\s*==)/g, '<span class="hl-directive">$1</span>');
-  s = s.replace(HL_KW_RE, '<span class="hl-keyword">$1</span>');
   s = s.replace(/(\{[^}]+\})/g, '<span class="hl-modifier">$1</span>');
   s = s.replace(/^(\s*)([+\-#~])(?=\s*\w)/, '$1<span class="hl-modifier">$2</span>');
   s = s.replace(/(#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b)/g, '<span class="hl-hex">$1</span>');
