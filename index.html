@@ -15,8 +15,8 @@
   header { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; background: var(--surface); position: sticky; top: 0; z-index: 10; flex-shrink: 0; }
   .logo { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .badge { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 20px; background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid rgba(99,102,241,0.3); }
-  .visit-badge { font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 20px; background: rgba(52,211,153,0.08); color: var(--muted); border: 1px solid rgba(52,211,153,0.2); display: flex; align-items: center; gap: 0.3rem; }
-  .visit-badge .visit-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .visit-badge { display: flex; align-items: center; opacity: 0.85; }
+  .visit-badge img { height: 18px; border-radius: 4px; }
   .header-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
   .dl-group { display: flex; gap: 0; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
   .dl-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 0.38rem 0.7rem; background: rgba(255,255,255,0.04); color: var(--muted); display: flex; align-items: center; gap: 0.4rem; border-right: 1px solid var(--border); letter-spacing: 0.5px; }
@@ -197,7 +197,7 @@
 <header>
   <span class="logo">PlantUML</span>
   <span class="badge">LIVE PREVIEW</span>
-  <span class="visit-badge"><span class="visit-dot"></span><span id="visit-count">...</span> visits</span>
+  <span class="visit-badge"><img src="https://hits.sh/github.com/twominutescoding/plantUML.svg?style=flat&color=475569&labelColor=1e2330" alt="visits" /></span>
   <div class="header-actions">
     <button class="btn-new" onclick="newDiagram()">+ New</button>
     <button class="btn-share" id="btn-share" onclick="shareLink()">&#10697; Share</button>
@@ -794,7 +794,10 @@ function addTab() {
   document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
   resetView();
   renderTabs();
-  document.getElementById('code').focus();
+  const ta = document.getElementById('code');
+  ta.focus();
+  const pos = '@startuml\n'.length;
+  ta.setSelectionRange(pos, pos);
 }
 
 function closeTab(id, e) {
@@ -1469,11 +1472,20 @@ async function renderDiagram() {
     saveToHistory(code, encoded);
   };
   img.onerror = () => {
+    if (!img.dataset.retried) {
+      img.dataset.retried = '1';
+      status.textContent = '\u25CF server busy \u2014 retrying...';
+      status.className = '';
+      setTimeout(() => { img.src = getUrl('svg', encoded) + '?r=' + Date.now(); }, 2500);
+      return;
+    }
+    delete img.dataset.retried;
     loader.style.display = 'none';
-    status.textContent = '\u25CF render error \u2014 check syntax';
+    status.textContent = '\u25CF render error \u2014 check syntax or try again';
     status.className = 'status-err';
     currentEncodedUrl = null;
   };
+  delete img.dataset.retried;
   img.src = getUrl('svg', encoded);
 }
 
@@ -1596,22 +1608,6 @@ async function downloadPDF() {
   btn.disabled = false;
 }
 
-// --- Visit counter ---
-(async function() {
-  const isLocal = ['localhost', '127.0.0.1', ''].includes(location.hostname) || location.protocol === 'file:';
-  if (isLocal) {
-    document.querySelector('.visit-badge').style.display = 'none';
-    return;
-  }
-  try {
-    // Change namespace/key to something unique for your deployment
-    const res = await fetch('https://api.counterapi.dev/v1/twominutescoding/plantuml/up');
-    const data = await res.json();
-    document.getElementById('visit-count').textContent = data.count.toLocaleString();
-  } catch {
-    document.querySelector('.visit-badge').style.display = 'none';
-  }
-})();
 
 const script = document.createElement('script');
 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js';
