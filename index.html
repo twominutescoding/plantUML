@@ -35,6 +35,24 @@
   .btn-new:hover { background: rgba(52,211,153,0.1) !important; }
   .btn-help { color: var(--accent2); border-color: rgba(167,139,250,0.3); }
   .btn-help:hover { background: rgba(167,139,250,0.1) !important; }
+  .btn-share { color: #60a5fa; border-color: rgba(96,165,250,0.3); }
+  .btn-share:hover { background: rgba(96,165,250,0.1) !important; }
+  .btn-history { color: #fb923c; border-color: rgba(251,146,60,0.3); }
+  .btn-history:hover { background: rgba(251,146,60,0.1) !important; }
+  /* History modal */
+  .hist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+  .hist-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+  .hist-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .hist-thumb { height: 110px; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .hist-thumb img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 6px; }
+  .hist-thumb .hist-loading { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: #aaa; }
+  .hist-info { padding: 0.5rem 0.6rem; border-top: 1px solid var(--border); }
+  .hist-name { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-time { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; color: var(--muted); margin-top: 0.2rem; }
+  .hist-empty { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: center; padding: 2rem 0; }
+  .hist-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+  .hist-clear { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; padding: 0.25rem 0.6rem; border-radius: 5px; border: 1px solid rgba(248,113,113,0.3); background: transparent; color: #f87171; cursor: pointer; transition: all 0.15s; }
+  .hist-clear:hover { background: rgba(248,113,113,0.1); }
 
   /* Examples bar */
   .examples-bar { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
@@ -47,10 +65,26 @@
   .editor-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
   .panel-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+  /* Tab bar */
+  .tab-bar { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); background: var(--surface); overflow-x: auto; flex-shrink: 0; }
+  .tab-bar::-webkit-scrollbar { height: 3px; }
+  .tab-bar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .tab { display: flex; align-items: center; gap: 0.35rem; padding: 0.55rem 0.85rem; font-family: 'JetBrains Mono', monospace; font-size: 0.67rem; color: var(--muted); cursor: pointer; border-right: 1px solid var(--border); white-space: nowrap; position: relative; transition: color 0.15s, background 0.15s; flex-shrink: 0; }
+  .tab:hover { color: var(--text); background: rgba(255,255,255,0.02); }
+  .tab.active { color: var(--text); background: var(--bg); }
+  .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
+  .tab-name { max-width: 110px; overflow: hidden; text-overflow: ellipsis; outline: none; }
+  .tab-name[contenteditable="true"] { background: rgba(99,102,241,0.1); border-radius: 3px; padding: 0 3px; min-width: 60px; }
+  .tab-close { width: 14px; height: 14px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; line-height: 1; opacity: 0; transition: all 0.1s; flex-shrink: 0; }
+  .tab:hover .tab-close, .tab.active .tab-close { opacity: 0.5; }
+  .tab-close:hover { opacity: 1 !important; background: rgba(248,113,113,0.2); color: #f87171; }
+  .tab-add { padding: 0.5rem 0.7rem; color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; background: transparent; border: none; border-left: none; transition: all 0.15s; flex-shrink: 0; margin-left: auto; }
+  .tab-add:hover { color: var(--green); background: rgba(52,211,153,0.08); }
   textarea { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.7; padding: 1rem; resize: none; min-height: 0; }
   .preview-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .preview-area { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 2rem; background: var(--bg); min-height: 0; }
-  #diagram-img { max-width: 100%; border-radius: 8px; box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 4px 30px rgba(0,0,0,0.5); border: 1px solid var(--border); }
+  .preview-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); min-height: 0; cursor: grab; user-select: none; position: relative; }
+  .preview-area.dragging { cursor: grabbing; }
+  #diagram-img { border-radius: 8px; box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 4px 30px rgba(0,0,0,0.5); border: 1px solid var(--border); pointer-events: none; max-width: 85%; transform-origin: center center; }
   .status-bar { padding: 0.5rem 1rem; border-top: 1px solid var(--border); font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); display: flex; gap: 1.5rem; background: var(--surface); align-items: center; flex-shrink: 0; }
   .status-ok { color: var(--green); } .status-err { color: #f87171; }
   .loader { display: none; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: auto; }
@@ -100,6 +134,8 @@
   <span class="badge">LIVE PREVIEW</span>
   <div class="header-actions">
     <button class="btn-new" onclick="newDiagram()">+ New</button>
+    <button class="btn-share" id="btn-share" onclick="shareLink()">&#10697; Share</button>
+    <button class="btn-history" onclick="openHistory()">&#10710; History</button>
     <button class="btn-help" onclick="openInstructions()">? Help</button>
     <div class="dl-group">
       <span class="dl-label">
@@ -126,7 +162,10 @@
 
 <div class="main">
   <div class="editor-panel">
-    <div class="panel-header"><span class="dot"></span> plantuml source</div>
+    <div class="tab-bar" id="tab-bar">
+      <!-- tabs rendered by JS -->
+      <button class="tab-add" onclick="addTab()" title="New tab">+</button>
+    </div>
 
     <div class="palette" id="palette">
       <div class="palette-header" onclick="togglePalette()">
@@ -146,9 +185,9 @@
     <div class="panel-header">
       <span class="dot"></span> diagram output
       <div class="zoom-controls">
-        <button onclick="zoom(-0.2)">&#8722;</button>
-        <button onclick="zoom(0.2)">+</button>
-        <button onclick="zoomLevel=1;applyZoom()">1:1</button>
+        <button onclick="zoom(-0.15)">&#8722;</button>
+        <button onclick="zoom(0.15)">+</button>
+        <button onclick="resetView()">1:1</button>
       </div>
     </div>
     <div class="preview-area">
@@ -163,6 +202,20 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="history-overlay" onclick="closeHistoryOnOverlay(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeHistory()">&#x2715; close</button>
+    <h2>Render History</h2>
+    <p class="subtitle">Last 20 successfully rendered diagrams — stored in your browser</p>
+    <div class="hist-actions">
+      <span id="hist-count" style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted)"></span>
+      <button class="hist-clear" onclick="clearHistory()">&#x2715; Clear all</button>
+    </div>
+    <div class="hist-grid" id="hist-grid"></div>
+  </div>
+</div>
 
 <!-- Instructions Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeInstructionsOnOverlay(event)">
@@ -546,12 +599,141 @@ const COMPONENTS = {
 };
 
 let zoomLevel = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let dragStartX, dragStartY, panStartX, panStartY;
 let debounceTimer;
 let currentEncodedUrl = null;
 let activeExample = 'sequence';
 let activePalTab = 'participants';
 
-document.getElementById('code').value = EXAMPLES.sequence;
+// --- Tab system ---
+let nextTabId = 2;
+const sharedParam = new URLSearchParams(window.location.search).get('d');
+const tabs = [{
+  id: 1,
+  name: 'Diagram 1',
+  code: sharedParam ? decodeURIComponent(sharedParam) : EXAMPLES.sequence,
+  encodedUrl: null
+}];
+let activeTabId = 1;
+
+if (sharedParam) document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
+
+function renderTabs() {
+  const bar = document.getElementById('tab-bar');
+  const addBtn = bar.querySelector('.tab-add');
+  // remove existing tab els
+  bar.querySelectorAll('.tab').forEach(el => el.remove());
+  // insert before add button
+  tabs.forEach(tab => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (tab.id === activeTabId ? ' active' : '');
+    el.dataset.id = tab.id;
+    el.innerHTML = `<span class="tab-name" ondblclick="renameTab(${tab.id},event)">${tab.name}</span><span class="tab-close" onclick="closeTab(${tab.id},event)">&#x2715;</span>`;
+    el.addEventListener('click', () => switchTab(tab.id));
+    bar.insertBefore(el, addBtn);
+  });
+}
+
+function saveCurrentTab() {
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) { tab.code = document.getElementById('code').value; tab.encodedUrl = currentEncodedUrl; }
+}
+
+function switchTab(id) {
+  saveCurrentTab();
+  activeTabId = id;
+  const tab = tabs.find(t => t.id === id);
+  document.getElementById('code').value = tab.code;
+  currentEncodedUrl = tab.encodedUrl || null;
+  setDownloadButtons(!!currentEncodedUrl);
+  if (currentEncodedUrl) {
+    const img = document.getElementById('diagram-img');
+    img.src = getUrl('svg', currentEncodedUrl);
+    img.style.display = 'block';
+  } else {
+    document.getElementById('diagram-img').style.display = 'none';
+    document.getElementById('status-text').textContent = '\u25CF ready';
+    document.getElementById('status-text').className = 'status-ok';
+    document.getElementById('render-time').textContent = '';
+  }
+  resetView();
+  renderTabs();
+}
+
+function addTab() {
+  saveCurrentTab();
+  const id = nextTabId++;
+  tabs.push({ id, name: `Diagram ${id}`, code: '@startuml\n\n\n@enduml', encodedUrl: null });
+  activeTabId = id;
+  document.getElementById('code').value = tabs[tabs.length - 1].code;
+  currentEncodedUrl = null;
+  setDownloadButtons(false);
+  document.getElementById('diagram-img').style.display = 'none';
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('status-text').textContent = '\u25CF new diagram \u2014 start typing';
+  document.getElementById('status-text').className = 'status-ok';
+  document.getElementById('render-time').textContent = '';
+  document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
+  resetView();
+  renderTabs();
+  document.getElementById('code').focus();
+}
+
+function closeTab(id, e) {
+  e.stopPropagation();
+  if (tabs.length === 1) return;
+  const idx = tabs.findIndex(t => t.id === id);
+  tabs.splice(idx, 1);
+  if (activeTabId === id) {
+    const next = tabs[Math.min(idx, tabs.length - 1)];
+    activeTabId = next.id;
+    document.getElementById('code').value = next.code;
+    currentEncodedUrl = next.encodedUrl || null;
+    setDownloadButtons(!!currentEncodedUrl);
+    if (currentEncodedUrl) {
+      const img = document.getElementById('diagram-img');
+      img.src = getUrl('svg', currentEncodedUrl);
+      img.style.display = 'block';
+    } else {
+      document.getElementById('diagram-img').style.display = 'none';
+    }
+    resetView();
+  }
+  renderTabs();
+}
+
+function renameTab(id, e) {
+  e.stopPropagation();
+  const tab = tabs.find(t => t.id === id);
+  const nameEl = document.querySelector(`.tab[data-id="${id}"] .tab-name`);
+  const original = tab.name;
+  nameEl.contentEditable = 'true';
+  nameEl.focus();
+  const range = document.createRange();
+  range.selectNodeContents(nameEl);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  const finish = () => {
+    nameEl.contentEditable = 'false';
+    tab.name = nameEl.textContent.trim() || original;
+    nameEl.textContent = tab.name;
+    nameEl.removeEventListener('blur', finish);
+    nameEl.removeEventListener('keydown', onKey);
+  };
+  const onKey = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); finish(); }
+    if (e.key === 'Escape') { nameEl.textContent = original; finish(); }
+  };
+  nameEl.addEventListener('blur', finish);
+  nameEl.addEventListener('keydown', onKey);
+}
+
+// Init tabs
+document.getElementById('code').value = tabs[0].code;
+renderTabs();
+
 document.getElementById('code').addEventListener('input', () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(renderDiagram, 1200);
@@ -603,23 +785,101 @@ function loadExample(name, el) {
   activeExample = name;
   document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) tab.name = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('code').value = EXAMPLES[name];
+  resetView();
+  renderTabs();
   renderDiagram();
 }
 
 function newDiagram() {
-  document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
-  const ta = document.getElementById('code');
-  ta.value = '@startuml\n\n\n@enduml';
-  ta.focus();
-  ta.selectionStart = ta.selectionEnd = '@startuml\n\n'.length;
-  currentEncodedUrl = null;
-  setDownloadButtons(false);
-  document.getElementById('diagram-img').style.display = 'none';
-  document.getElementById('loader').style.display = 'none';
-  document.getElementById('status-text').textContent = '\u25CF new diagram — start typing';
-  document.getElementById('status-text').className = 'status-ok';
-  document.getElementById('render-time').textContent = '';
+  addTab();
+}
+
+function shareLink() {
+  const code = document.getElementById('code').value.trim();
+  if (!code) { showToast('\u2715 Nothing to share'); return; }
+  const url = `${location.origin}${location.pathname}?d=${encodeURIComponent(code)}`;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('\u2713 Link copied to clipboard');
+    const btn = document.getElementById('btn-share');
+    btn.textContent = '\u2713 Copied!';
+    setTimeout(() => btn.innerHTML = '&#10697; Share', 2000);
+  }).catch(() => {
+    prompt('Copy this link:', url);
+  });
+}
+
+// --- History ---
+const HISTORY_KEY = 'plantuml_history';
+const HISTORY_MAX = 20;
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+
+function saveToHistory(code, encodedUrl) {
+  const history = getHistory().filter(h => h.encodedUrl !== encodedUrl);
+  const title = (code.match(/^title\s+(.+)$/m) || [])[1]
+    || (code.match(/@start\w+\n+(\S[^\n]*)/m) || [])[1]
+    || 'Untitled';
+  history.unshift({ encodedUrl, code, title: title.trim(), ts: Date.now() });
+  if (history.length > HISTORY_MAX) history.length = HISTORY_MAX;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+function openHistory() {
+  renderHistoryGrid();
+  document.getElementById('history-overlay').classList.add('open');
+}
+function closeHistory() { document.getElementById('history-overlay').classList.remove('open'); }
+function closeHistoryOnOverlay(e) { if (e.target === document.getElementById('history-overlay')) closeHistory(); }
+
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistoryGrid();
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
+function renderHistoryGrid() {
+  const history = getHistory();
+  const grid = document.getElementById('hist-grid');
+  const count = document.getElementById('hist-count');
+  count.textContent = `${history.length} / ${HISTORY_MAX} entries`;
+  if (!history.length) {
+    grid.innerHTML = '<div class="hist-empty">No history yet — render a diagram to start tracking</div>';
+    return;
+  }
+  grid.innerHTML = history.map((entry, i) => `
+    <div class="hist-card" onclick="loadFromHistory(${i})" title="${entry.title}">
+      <div class="hist-thumb">
+        <img src="${getUrl('svg', entry.encodedUrl)}" alt="" onerror="this.parentNode.innerHTML='<span class=hist-loading>preview unavailable</span>'" />
+      </div>
+      <div class="hist-info">
+        <div class="hist-name">${entry.title}</div>
+        <div class="hist-time">${timeAgo(entry.ts)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function loadFromHistory(idx) {
+  const entry = getHistory()[idx];
+  if (!entry) return;
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) { tab.name = entry.title; tab.encodedUrl = entry.encodedUrl; }
+  document.getElementById('code').value = entry.code;
+  renderTabs();
+  closeHistory();
+  resetView();
+  renderDiagram();
 }
 
 function openInstructions() {
@@ -632,12 +892,44 @@ function closeInstructionsOnOverlay(e) {
   if (e.target === document.getElementById('modal-overlay')) closeInstructions();
 }
 
-function zoom(delta) { zoomLevel = Math.max(0.3, Math.min(3, zoomLevel + delta)); applyZoom(); }
-function applyZoom() {
-  const img = document.getElementById('diagram-img');
-  img.style.transform = `scale(${zoomLevel})`;
-  img.style.transformOrigin = 'top center';
+function zoom(delta) { zoomLevel = Math.max(0.2, Math.min(5, zoomLevel + delta)); applyTransform(); }
+function resetView() { zoomLevel = 1; panX = 0; panY = 0; applyTransform(); }
+function applyTransform() {
+  document.getElementById('diagram-img').style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
 }
+
+// Pan & zoom with mouse
+(function() {
+  const area = document.querySelector('.preview-area');
+
+  area.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    zoomLevel = Math.max(0.2, Math.min(5, zoomLevel * factor));
+    applyTransform();
+  }, { passive: false });
+
+  area.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    panStartX = panX;
+    panStartY = panY;
+    area.classList.add('dragging');
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panX = panStartX + (e.clientX - dragStartX);
+    panY = panStartY + (e.clientY - dragStartY);
+    applyTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    area.classList.remove('dragging');
+  });
+})();
 
 function encode64(data) {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
@@ -691,14 +983,17 @@ async function renderDiagram() {
   if (!encoded) { status.textContent = '\u25CF pako not ready, retrying...'; setTimeout(renderDiagram, 500); return; }
 
   currentEncodedUrl = encoded;
+  const activeTab = tabs.find(t => t.id === activeTabId);
+  if (activeTab) activeTab.encodedUrl = encoded;
   img.onload = () => {
     loader.style.display = 'none';
     img.style.display = 'block';
     status.textContent = '\u25CF rendered successfully';
     status.className = 'status-ok';
     timeEl.textContent = `${Date.now() - t0}ms`;
-    applyZoom();
+    applyTransform();
     setDownloadButtons(true);
+    saveToHistory(code, encoded);
   };
   img.onerror = () => {
     loader.style.display = 'none';
@@ -716,24 +1011,58 @@ function showToast(msg) {
   setTimeout(() => t.className = 'toast success', 2500);
 }
 
+function getFileName(format) {
+  const tab = tabs.find(t => t.id === activeTabId);
+  const raw = tab ? tab.name : 'diagram';
+  const safe = raw.trim().replace(/[^a-z0-9_\-\s]/gi, '').replace(/\s+/g, '_') || 'diagram';
+  return `${safe}.${format}`;
+}
+
 async function downloadDiagram(format) {
   if (!currentEncodedUrl) return;
+  if (format === 'pdf') { downloadPDF(); return; }
   const btn = document.getElementById(`btn-${format}`);
   btn.classList.add('loading');
   btn.disabled = true;
   const url = getUrl(format, currentEncodedUrl);
+  const filename = getFileName(format);
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error();
     const blob = await res.blob();
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `diagram.${format}`;
+    a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    showToast(`\u2713 diagram.${format} downloaded`);
+    showToast(`\u2713 ${filename} downloaded`);
   } catch {
     window.open(url, '_blank');
     showToast(`\u2197 Opened in new tab \u2014 save manually`);
+  }
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+async function downloadPDF() {
+  if (!currentEncodedUrl) return;
+  const btn = document.getElementById('btn-pdf');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  try {
+    const res = await fetch(getUrl('svg', currentEncodedUrl));
+    if (!res.ok) throw new Error();
+    const svgText = await res.text();
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #fff; }
+      svg { max-width: 100%; height: auto; }
+      @media print { body { padding: 1cm; } }
+    </style></head><body>${svgText}<script>window.onload=()=>window.print();<\/script></body></html>`);
+    win.document.close();
+    showToast('\u2197 Print dialog \u2014 save as PDF');
+  } catch {
+    showToast('\u2715 PDF export failed \u2014 try SVG');
   }
   btn.classList.remove('loading');
   btn.disabled = false;
