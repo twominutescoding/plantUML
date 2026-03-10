@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PlantUML Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f14; --surface: #13161e; --border: #1e2330;
+    --accent: #6366f1; --accent2: #a78bfa; --text: #e2e8f0;
+    --muted: #64748b; --green: #34d399;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  header { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; background: var(--surface); position: sticky; top: 0; z-index: 10; flex-shrink: 0; }
+  .logo { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .badge { font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 20px; background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid rgba(99,102,241,0.3); }
+  .header-actions { margin-left: auto; display: flex; gap: 0.5rem; align-items: center; }
+  .dl-group { display: flex; gap: 0; border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
+  .dl-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 0.38rem 0.7rem; background: rgba(255,255,255,0.04); color: var(--muted); display: flex; align-items: center; gap: 0.4rem; border-right: 1px solid var(--border); letter-spacing: 0.5px; }
+  .dl-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.38rem 0.85rem; border: none; border-right: 1px solid var(--border); background: transparent; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 0.35rem; font-weight: 600; }
+  .dl-btn:last-child { border-right: none; }
+  .dl-btn.svg { color: #34d399; } .dl-btn.svg:hover { background: rgba(52,211,153,0.12); }
+  .dl-btn.png { color: #60a5fa; } .dl-btn.png:hover { background: rgba(96,165,250,0.12); }
+  .dl-btn.pdf { color: #f87171; } .dl-btn.pdf:hover { background: rgba(248,113,113,0.12); }
+  .dl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .dl-btn .spinner { width: 10px; height: 10px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
+  .dl-btn.loading .spinner { display: inline-block; }
+  .dl-btn.loading .icon { display: none; }
+  button { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.15s; }
+  button:hover { background: var(--border); }
+  .btn-primary { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-new { color: var(--green); border-color: rgba(52,211,153,0.3); }
+  .btn-new:hover { background: rgba(52,211,153,0.1) !important; }
+  .btn-help { color: var(--accent2); border-color: rgba(167,139,250,0.3); }
+  .btn-help:hover { background: rgba(167,139,250,0.1) !important; }
+
+  /* Examples bar */
+  .examples-bar { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+  .ex-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-right: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ex-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; padding: 0.25rem 0.7rem; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .ex-btn:hover, .ex-btn.active { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent2); }
+
+  /* Layout */
+  .main { display: grid; grid-template-columns: 380px 1fr; flex: 1; min-height: 0; }
+  .editor-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface); min-height: 0; }
+  .panel-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+  textarea { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.7; padding: 1rem; resize: none; min-height: 0; }
+  .preview-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .preview-area { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 2rem; background: var(--bg); min-height: 0; }
+  #diagram-img { max-width: 100%; border-radius: 8px; box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 4px 30px rgba(0,0,0,0.5); border: 1px solid var(--border); }
+  .status-bar { padding: 0.5rem 1rem; border-top: 1px solid var(--border); font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); display: flex; gap: 1.5rem; background: var(--surface); align-items: center; flex-shrink: 0; }
+  .status-ok { color: var(--green); } .status-err { color: #f87171; }
+  .loader { display: none; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: auto; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .zoom-controls { display: flex; gap: 0.3rem; margin-left: auto; }
+  .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.6rem 1.2rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; z-index: 999; transform: translateY(20px); opacity: 0; transition: all 0.25s; pointer-events: none; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #34d399; }
+
+  /* Component Palette */
+  .palette { border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .palette-header { padding: 0.45rem 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .palette-header:hover { background: rgba(255,255,255,0.02); }
+  .palette-title { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 0.5rem; }
+  .palette-toggle { font-size: 0.55rem; color: var(--muted); transition: transform 0.2s; line-height: 1; }
+  .palette.open .palette-toggle { transform: rotate(180deg); }
+  .palette-body { display: none; padding: 0 0.75rem 0.65rem; }
+  .palette.open .palette-body { display: block; }
+  .pal-tabs { display: flex; gap: 0.25rem; margin-bottom: 0.45rem; flex-wrap: wrap; padding-top: 0.45rem; }
+  .pal-tab { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; padding: 0.18rem 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.3px; }
+  .pal-tab:hover { color: var(--text); border-color: var(--muted); background: none; }
+  .pal-tab.active { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent2); }
+  .pal-items { display: flex; flex-wrap: wrap; gap: 0.28rem; }
+  .pal-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.2rem 0.55rem; border-radius: 4px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .pal-btn:hover { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent2); }
+
+  /* Instructions Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: min(700px, 92vw); max-height: 84vh; overflow-y: auto; padding: 2rem; position: relative; }
+  .modal-close { position: absolute; top: 1rem; right: 1rem; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 0.25rem 0.6rem; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+  .modal h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 0.2rem; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .modal .subtitle { font-size: 0.7rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 1.5rem; }
+  .modal h3 { font-size: 0.68rem; color: var(--accent2); text-transform: uppercase; letter-spacing: 1px; margin: 1.2rem 0 0.55rem; font-family: 'JetBrains Mono', monospace; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .ref-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 0.85rem; }
+  .ref-card code { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.63rem; color: var(--text); line-height: 1.85; white-space: pre; }
+  .ref-card .desc { font-size: 0.62rem; color: var(--muted); margin-bottom: 0.35rem; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tip { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.67rem; font-family: 'JetBrains Mono', monospace; color: var(--accent2); margin-top: 1.25rem; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">PlantUML</span>
+  <span class="badge">LIVE PREVIEW</span>
+  <div class="header-actions">
+    <button class="btn-new" onclick="newDiagram()">+ New</button>
+    <button class="btn-help" onclick="openInstructions()">? Help</button>
+    <div class="dl-group">
+      <span class="dl-label">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </span>
+      <button class="dl-btn svg" id="btn-svg" onclick="downloadDiagram('svg')" disabled><span class="icon">SVG</span><span class="spinner"></span></button>
+      <button class="dl-btn png" id="btn-png" onclick="downloadDiagram('png')" disabled><span class="icon">PNG</span><span class="spinner"></span></button>
+      <button class="dl-btn pdf" id="btn-pdf" onclick="downloadDiagram('pdf')" disabled><span class="icon">PDF</span><span class="spinner"></span></button>
+    </div>
+    <button class="btn-primary" onclick="renderDiagram()">&#9654; Render</button>
+  </div>
+</header>
+
+<div class="examples-bar">
+  <span class="ex-label">Examples:</span>
+  <button class="ex-btn active" onclick="loadExample('sequence', this)">Sequence</button>
+  <button class="ex-btn" onclick="loadExample('class', this)">Class</button>
+  <button class="ex-btn" onclick="loadExample('activity', this)">Activity</button>
+  <button class="ex-btn" onclick="loadExample('usecase', this)">Use Case</button>
+  <button class="ex-btn" onclick="loadExample('state', this)">State</button>
+  <button class="ex-btn" onclick="loadExample('component', this)">Component</button>
+</div>
+
+<div class="main">
+  <div class="editor-panel">
+    <div class="panel-header"><span class="dot"></span> plantuml source</div>
+
+    <div class="palette" id="palette">
+      <div class="palette-header" onclick="togglePalette()">
+        <span class="palette-title">&#8862; components</span>
+        <span class="palette-toggle">&#9660;</span>
+      </div>
+      <div class="palette-body">
+        <div class="pal-tabs" id="pal-tabs"></div>
+        <div class="pal-items" id="pal-items"></div>
+      </div>
+    </div>
+
+    <textarea id="code" spellcheck="false"></textarea>
+  </div>
+
+  <div class="preview-panel">
+    <div class="panel-header">
+      <span class="dot"></span> diagram output
+      <div class="zoom-controls">
+        <button onclick="zoom(-0.2)">&#8722;</button>
+        <button onclick="zoom(0.2)">+</button>
+        <button onclick="zoomLevel=1;applyZoom()">1:1</button>
+      </div>
+    </div>
+    <div class="preview-area">
+      <div class="loader" id="loader"></div>
+      <img id="diagram-img" style="display:none;" alt="PlantUML Diagram" />
+    </div>
+    <div class="status-bar">
+      <span id="status-text" class="status-ok">&#9679; ready</span>
+      <span id="render-time"></span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Instructions Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeInstructionsOnOverlay(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeInstructions()">&#x2715; close</button>
+    <h2>PlantUML Quick Reference</h2>
+    <p class="subtitle">Every diagram starts with @startuml and ends with @enduml</p>
+
+    <h3>Sequence Diagrams</h3>
+    <div class="modal-grid">
+      <div class="ref-card">
+        <div class="desc">Participants</div>
+        <code>actor User
+participant App
+database DB
+queue MQ
+cloud CDN</code>
+      </div>
+      <div class="ref-card">
+        <div class="desc">Arrows</div>
+        <code>A -> B : solid
+A --> B : dashed
+A ->> B : open head
+A ->x B : lost msg
+A <-> B : bidirectional</code>
+      </div>
+      <div class="ref-card">
+        <div class="desc">Groups</div>
+        <code>alt condition
+  ...
+else fallback
+  ...
+end
+
+loop N times
+  ...
+end</code>
+      </div>
+      <div class="ref-card">
+        <div class="desc">Notes</div>
+        <code>note left of A : text
+note right of B : text
+note over A, B
+  multiline note
+end note</code>
+      </div>
+    </div>
+
+    <h3>Class Diagrams</h3>
+    <div class="modal-grid">
+      <div class="ref-card">
+        <div class="desc">Definitions</div>
+        <code>class Animal {
+  # name : String
+  + {abstract} speak()
+}
+abstract class Vehicle
+interface Drawable
+enum Color { RED, GREEN }</code>
+      </div>
+      <div class="ref-card">
+        <div class="desc">Relationships</div>
+        <code>A &lt;|-- B      ' extends
+A &lt;|.. B      ' implements
+A --> B       ' uses
+A *-- B       ' composition
+A o-- B       ' aggregation
+A "1" -- "n" B</code>
+      </div>
+    </div>
+
+    <h3>State &amp; Activity</h3>
+    <div class="modal-grid">
+      <div class="ref-card">
+        <div class="desc">State</div>
+        <code>[*] --> Created
+Created --> Active : activate
+Active --> [*] : done
+state Active {
+  [*] --> Running
+}</code>
+      </div>
+      <div class="ref-card">
+        <div class="desc">Activity</div>
+        <code>start
+:Do something;
+if (condition?) then (yes)
+  :Branch A;
+else (no)
+  :Branch B;
+endif
+stop</code>
+      </div>
+    </div>
+
+    <h3>Styling</h3>
+    <div class="ref-card">
+      <code>skinparam sequence {
+  ArrowColor #6366f1
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #4F46E5
+}
+title My Diagram Title
+header Page header
+footer Page footer</code>
+    </div>
+
+    <div class="tip">
+      Use the <strong>Components</strong> palette in the editor to insert snippets at your cursor position.
+      Load full templates from the <strong>Examples</strong> bar, or start fresh with <strong>+ New</strong>.
+      Press <strong>Render</strong> or wait 1.2s after typing to auto-render.
+    </div>
+  </div>
+</div>
+
+<script>
+const EXAMPLES = {
+  sequence: `@startuml
+skinparam sequence {
+  ArrowColor #6366f1
+  ActorBorderColor #6366f1
+  LifeLineBorderColor #6366f1
+  ParticipantBackgroundColor #EEF2FF
+  ParticipantBorderColor #4F46E5
+}
+
+title User Login Flow
+
+actor User
+participant Browser
+participant "Auth Server" as Auth
+database "User DB" as DB
+
+User -> Browser : Enter credentials
+Browser -> Auth : POST /login { email, password }
+Auth -> DB : SELECT user WHERE email = ?
+DB --> Auth : User record
+
+alt Password correct
+  Auth --> Browser : 200 OK + JWT token
+  Browser --> User : Redirect to dashboard
+else Password wrong
+  Auth --> Browser : 401 Unauthorized
+  Browser --> User : Show error message
+end
+@enduml`,
+
+  class: `@startuml
+skinparam class {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  HeaderBackgroundColor #4F46E5
+  HeaderFontColor #FFFFFF
+}
+
+title Animal Hierarchy
+
+abstract class Animal {
+  # name : String
+  # age : int
+  + {abstract} speak() : String
+  + eat() : void
+}
+
+class Dog {
+  - breed : String
+  + speak() : String
+  + fetch() : void
+}
+
+class Cat {
+  - isIndoor : boolean
+  + speak() : String
+  + purr() : void
+}
+
+class Bird {
+  - wingspan : double
+  + speak() : String
+  + fly() : void
+}
+
+Animal <|-- Dog
+Animal <|-- Cat
+Animal <|-- Bird
+@enduml`,
+
+  activity: `@startuml
+skinparam activity {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  StartColor #4F46E5
+  EndColor #4F46E5
+  ArrowColor #6366f1
+}
+
+title Order Processing
+
+start
+:Customer places order;
+:Validate cart items;
+
+if (Items in stock?) then (yes)
+  :Charge payment;
+  if (Payment OK?) then (yes)
+    :Confirm order;
+    :Send confirmation email;
+    :Pack & ship;
+    stop
+  else (no)
+    :Notify payment failed;
+    stop
+  endif
+else (no)
+  :Notify out of stock;
+  stop
+endif
+@enduml`,
+
+  usecase: `@startuml
+skinparam usecase {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  ActorBorderColor #4F46E5
+  ArrowColor #6366f1
+}
+
+title Blog Platform
+
+left to right direction
+
+actor Guest
+actor Author
+actor Admin
+
+rectangle "Blog Platform" {
+  (Read posts) as read
+  (Search posts) as search
+  (Register) as register
+  (Write post) as write
+  (Edit post) as edit
+  (Delete post) as delete
+  (Manage users) as manage
+}
+
+Guest --> read
+Guest --> search
+Guest --> register
+
+Author --> write
+Author --> edit
+Author --> read
+
+Admin --> manage
+Admin --> delete
+Admin --|> Author
+@enduml`,
+
+  state: `@startuml
+skinparam state {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  StartColor #4F46E5
+  EndColor #4F46E5
+  ArrowColor #6366f1
+}
+
+title Order Status
+
+[*] --> Created
+
+Created --> Paid : payment confirmed
+Paid --> Processing : warehouse notified
+Processing --> Shipped : package dispatched
+Shipped --> Delivered : courier confirms
+
+Delivered --> [*]
+
+Created --> Cancelled : customer cancels
+Paid --> Cancelled : customer cancels
+Paid --> Refunded : refund requested
+Cancelled --> [*]
+Refunded --> [*]
+@enduml`,
+
+  component: `@startuml
+skinparam component {
+  BackgroundColor #EEF2FF
+  BorderColor #4F46E5
+  ArrowColor #6366f1
+}
+
+title Web App Architecture
+
+package "Frontend" {
+  [React App] as ui
+  [Redux Store] as store
+}
+
+package "Backend" {
+  [REST API] as api
+  [Auth Service] as auth
+  [Email Service] as email
+}
+
+database "PostgreSQL" as db
+cloud "CDN" as cdn
+
+ui --> api : HTTP requests
+ui --> store : state
+api --> auth : verify token
+api --> db : queries
+api --> email : send notifications
+ui --> cdn : static assets
+@enduml`
+};
+
+const COMPONENTS = {
+  participants: [
+    { label: 'actor',        snippet: 'actor Name\n' },
+    { label: 'participant',  snippet: 'participant Name\n' },
+    { label: 'database',     snippet: 'database Name\n' },
+    { label: 'queue',        snippet: 'queue Name\n' },
+    { label: 'entity',       snippet: 'entity Name\n' },
+    { label: 'boundary',     snippet: 'boundary Name\n' },
+    { label: 'control',      snippet: 'control Name\n' },
+    { label: 'cloud',        snippet: 'cloud Name\n' },
+    { label: 'collections',  snippet: 'collections Name\n' },
+  ],
+  arrows: [
+    { label: 'A -> B',   snippet: 'A -> B : label\n' },
+    { label: 'A --> B',  snippet: 'A --> B : label\n' },
+    { label: 'A ->> B',  snippet: 'A ->> B : label\n' },
+    { label: 'A ->x B',  snippet: 'A ->x B : label\n' },
+    { label: 'A <-> B',  snippet: 'A <-> B : label\n' },
+    { label: 'A <-- B',  snippet: 'A <-- B : label\n' },
+  ],
+  groups: [
+    { label: 'alt/else', snippet: 'alt condition\n  \nelse fallback\n  \nend\n' },
+    { label: 'loop',     snippet: 'loop condition\n  \nend\n' },
+    { label: 'opt',      snippet: 'opt condition\n  \nend\n' },
+    { label: 'group',    snippet: 'group label\n  \nend\n' },
+    { label: 'par',      snippet: 'par\n  \nelse\n  \nend\n' },
+    { label: 'critical', snippet: 'critical\n  \nend\n' },
+    { label: 'break',    snippet: 'break condition\n  \nend\n' },
+  ],
+  notes: [
+    { label: 'note left',  snippet: 'note left\n  text\nend note\n' },
+    { label: 'note right', snippet: 'note right\n  text\nend note\n' },
+    { label: 'note over',  snippet: 'note over A, B\n  text\nend note\n' },
+    { label: 'title',      snippet: 'title My Diagram\n' },
+    { label: 'header',     snippet: 'header My Header\n' },
+    { label: 'footer',     snippet: 'footer My Footer\n' },
+    { label: '== divider ==', snippet: '== Section ==\n' },
+  ],
+  classes: [
+    { label: 'class',       snippet: 'class Name {\n  + field : Type\n  + method() : void\n}\n' },
+    { label: 'abstract',    snippet: 'abstract class Name {\n  + {abstract} method() : void\n}\n' },
+    { label: 'interface',   snippet: 'interface Name {\n  + method() : void\n}\n' },
+    { label: 'enum',        snippet: 'enum Name {\n  VALUE_A\n  VALUE_B\n}\n' },
+    { label: 'extends',     snippet: 'Parent <|-- Child\n' },
+    { label: 'implements',  snippet: 'Interface <|.. Class\n' },
+    { label: 'uses -->',    snippet: 'A --> B\n' },
+    { label: 'compose *--', snippet: 'A "1" *-- "many" B\n' },
+    { label: 'aggregate o--', snippet: 'A "1" o-- "many" B\n' },
+  ],
+  state: [
+    { label: '[*] start',    snippet: '[*] --> StateName\n' },
+    { label: 'end [*]',      snippet: 'StateName --> [*]\n' },
+    { label: 'transition',   snippet: 'StateA --> StateB : event\n' },
+    { label: 'composite',    snippet: 'state StateName {\n  [*] --> Sub\n  Sub --> [*]\n}\n' },
+  ],
+  activity: [
+    { label: 'start',    snippet: 'start\n' },
+    { label: 'stop',     snippet: 'stop\n' },
+    { label: ':action;', snippet: ':Action Label;\n' },
+    { label: 'if/else',  snippet: 'if (condition?) then (yes)\n  :Branch A;\nelse (no)\n  :Branch B;\nendif\n' },
+    { label: 'while',    snippet: 'while (condition?) is (yes)\n  :Action;\nendwhile (no)\n' },
+    { label: 'fork',     snippet: 'fork\n  :Task A;\nfork again\n  :Task B;\nend fork\n' },
+  ],
+};
+
+let zoomLevel = 1;
+let debounceTimer;
+let currentEncodedUrl = null;
+let activeExample = 'sequence';
+let activePalTab = 'participants';
+
+document.getElementById('code').value = EXAMPLES.sequence;
+document.getElementById('code').addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(renderDiagram, 1200);
+});
+
+buildPalette();
+
+function buildPalette() {
+  const tabsEl = document.getElementById('pal-tabs');
+  tabsEl.innerHTML = Object.keys(COMPONENTS).map(cat =>
+    `<button class="pal-tab${cat === activePalTab ? ' active' : ''}" onclick="switchPalTab('${cat}', this)">${cat}</button>`
+  ).join('');
+  renderPalItems(activePalTab);
+}
+
+function switchPalTab(cat, el) {
+  activePalTab = cat;
+  document.querySelectorAll('.pal-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderPalItems(cat);
+}
+
+function renderPalItems(cat) {
+  const el = document.getElementById('pal-items');
+  el.innerHTML = COMPONENTS[cat].map((c, i) =>
+    `<button class="pal-btn" data-cat="${cat}" data-idx="${i}">${c.label}</button>`
+  ).join('');
+  el.querySelectorAll('.pal-btn').forEach(btn => {
+    btn.addEventListener('click', () => insertSnippet(COMPONENTS[btn.dataset.cat][btn.dataset.idx].snippet));
+  });
+}
+
+function togglePalette() {
+  document.getElementById('palette').classList.toggle('open');
+}
+
+function insertSnippet(snippet) {
+  const ta = document.getElementById('code');
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + snippet.length;
+  ta.focus();
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(renderDiagram, 1200);
+}
+
+function loadExample(name, el) {
+  activeExample = name;
+  document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('code').value = EXAMPLES[name];
+  renderDiagram();
+}
+
+function newDiagram() {
+  document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
+  const ta = document.getElementById('code');
+  ta.value = '@startuml\n\n\n@enduml';
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = '@startuml\n\n'.length;
+  currentEncodedUrl = null;
+  setDownloadButtons(false);
+  document.getElementById('diagram-img').style.display = 'none';
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('status-text').textContent = '\u25CF new diagram — start typing';
+  document.getElementById('status-text').className = 'status-ok';
+  document.getElementById('render-time').textContent = '';
+}
+
+function openInstructions() {
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeInstructions() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function closeInstructionsOnOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeInstructions();
+}
+
+function zoom(delta) { zoomLevel = Math.max(0.3, Math.min(3, zoomLevel + delta)); applyZoom(); }
+function applyZoom() {
+  const img = document.getElementById('diagram-img');
+  img.style.transform = `scale(${zoomLevel})`;
+  img.style.transformOrigin = 'top center';
+}
+
+function encode64(data) {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+  let r = '';
+  for (let i = 0; i < data.length; i += 3) {
+    const b0 = data.charCodeAt(i) & 0xff;
+    const b1 = i+1 < data.length ? data.charCodeAt(i+1) & 0xff : 0;
+    const b2 = i+2 < data.length ? data.charCodeAt(i+2) & 0xff : 0;
+    r += chars[(b0 >> 2) & 0x3f];
+    r += chars[((b0 << 4) | (b1 >> 4)) & 0x3f];
+    r += chars[((b1 << 2) | (b2 >> 6)) & 0x3f];
+    r += chars[b2 & 0x3f];
+  }
+  return r;
+}
+
+function getEncodedUML(uml) {
+  if (!window.pako) return null;
+  const compressed = pako.deflateRaw(new TextEncoder().encode(uml));
+  let binary = '';
+  compressed.forEach(b => binary += String.fromCharCode(b));
+  return encode64(binary);
+}
+
+function getUrl(format, encoded) {
+  return `https://www.plantuml.com/plantuml/${format}/${encoded}`;
+}
+
+function setDownloadButtons(enabled) {
+  ['btn-svg','btn-png','btn-pdf'].forEach(id => {
+    document.getElementById(id).disabled = !enabled;
+  });
+}
+
+async function renderDiagram() {
+  const code = document.getElementById('code').value.trim();
+  if (!code) return;
+  const loader = document.getElementById('loader');
+  const img = document.getElementById('diagram-img');
+  const status = document.getElementById('status-text');
+  const timeEl = document.getElementById('render-time');
+
+  loader.style.display = 'block';
+  img.style.display = 'none';
+  status.textContent = '\u25CF rendering...';
+  status.className = '';
+  setDownloadButtons(false);
+
+  const t0 = Date.now();
+  const encoded = getEncodedUML(code);
+  if (!encoded) { status.textContent = '\u25CF pako not ready, retrying...'; setTimeout(renderDiagram, 500); return; }
+
+  currentEncodedUrl = encoded;
+  img.onload = () => {
+    loader.style.display = 'none';
+    img.style.display = 'block';
+    status.textContent = '\u25CF rendered successfully';
+    status.className = 'status-ok';
+    timeEl.textContent = `${Date.now() - t0}ms`;
+    applyZoom();
+    setDownloadButtons(true);
+  };
+  img.onerror = () => {
+    loader.style.display = 'none';
+    status.textContent = '\u25CF render error \u2014 check syntax';
+    status.className = 'status-err';
+    currentEncodedUrl = null;
+  };
+  img.src = getUrl('svg', encoded);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast success show';
+  setTimeout(() => t.className = 'toast success', 2500);
+}
+
+async function downloadDiagram(format) {
+  if (!currentEncodedUrl) return;
+  const btn = document.getElementById(`btn-${format}`);
+  btn.classList.add('loading');
+  btn.disabled = true;
+  const url = getUrl(format, currentEncodedUrl);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `diagram.${format}`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast(`\u2713 diagram.${format} downloaded`);
+  } catch {
+    window.open(url, '_blank');
+    showToast(`\u2197 Opened in new tab \u2014 save manually`);
+  }
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+const script = document.createElement('script');
+script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js';
+script.onload = () => renderDiagram();
+script.onerror = () => {
+  const status = document.getElementById('status-text');
+  status.textContent = '\u25CF failed to load pako \u2014 check your connection';
+  status.className = 'status-err';
+};
+document.head.appendChild(script);
+</script>
+</body>
+</html>

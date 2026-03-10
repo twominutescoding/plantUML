@@ -1,0 +1,18 @@
+# JetBrains IDE
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+
+# Logs & temp
+*.log
+tmp/
+temp/
