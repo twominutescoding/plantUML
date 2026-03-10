@@ -1604,10 +1604,10 @@ async function downloadPDF() {
     return;
   }
   try {
-    // Change 'plantuml-preview' to your own namespace to get a unique counter
-    const res = await fetch('https://api.countapi.xyz/hit/plantuml-preview/visits');
+    // Change namespace/key to something unique for your deployment
+    const res = await fetch('https://api.counterapi.dev/v1/twominutescoding/plantuml/up');
     const data = await res.json();
-    document.getElementById('visit-count').textContent = data.value.toLocaleString();
+    document.getElementById('visit-count').textContent = data.count.toLocaleString();
   } catch {
     document.querySelector('.visit-badge').style.display = 'none';
   }
