@@ -906,6 +906,21 @@ function loadAutosave() {
   } catch { return false; }
 }
 
+// --- Object Parser constants (must be before init) ---
+const OBJ_TYPES = [
+  'actor','participant','database','queue','entity','boundary','control',
+  'cloud','collections','node','component','storage','agent','usecase',
+  'rectangle','package','namespace','frame','folder','state',
+  'interface','enum'
+];
+const OBJ_TYPE_ICON = {
+  actor:'act', participant:'ptcp', database:'db', queue:'q', entity:'ent',
+  boundary:'bnd', control:'ctrl', cloud:'cld', collections:'col', node:'node',
+  component:'cmp', storage:'str', agent:'agt', usecase:'uc',
+  rectangle:'rect', package:'pkg', namespace:'ns', frame:'frm', folder:'fld',
+  state:'st', interface:'ifc', enum:'enm', class:'cls', 'abstract class':'abs'
+};
+
 // Restore autosaved session (unless share link is present)
 if (!sharedParam) loadAutosave();
 setInterval(autosave, 30000);
@@ -923,21 +938,6 @@ document.getElementById('code').addEventListener('input', () => {
 });
 
 buildPalette();
-
-// --- Object Parser ---
-const OBJ_TYPES = [
-  'actor','participant','database','queue','entity','boundary','control',
-  'cloud','collections','node','component','storage','agent','usecase',
-  'rectangle','package','namespace','frame','folder','state',
-  'interface','enum'
-];
-const OBJ_TYPE_ICON = {
-  actor:'act', participant:'ptcp', database:'db', queue:'q', entity:'ent',
-  boundary:'bnd', control:'ctrl', cloud:'cld', collections:'col', node:'node',
-  component:'cmp', storage:'str', agent:'agt', usecase:'uc',
-  rectangle:'rect', package:'pkg', namespace:'ns', frame:'frm', folder:'fld',
-  state:'st', interface:'ifc', enum:'enm', class:'cls', 'abstract class':'abs'
-};
 
 function parseObjects(code) {
   const objects = [], seen = new Set();
