@@ -80,7 +80,25 @@
   .tab-close:hover { opacity: 1 !important; background: rgba(248,113,113,0.2); color: #f87171; }
   .tab-add { padding: 0.5rem 0.7rem; color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; background: transparent; border: none; border-left: none; transition: all 0.15s; flex-shrink: 0; margin-left: auto; }
   .tab-add:hover { color: var(--green); background: rgba(52,211,153,0.08); }
-  textarea { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.7; padding: 1rem; resize: none; min-height: 0; }
+  .editor-wrapper { flex: 1; display: grid; min-height: 0; }
+  .editor-wrapper > * {
+    grid-area: 1 / 1 / 2 / 2;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.7;
+    padding: 1rem; box-sizing: border-box; white-space: pre-wrap; word-wrap: break-word;
+    margin: 0; border: 0;
+  }
+  .highlight-layer { pointer-events: none; color: var(--text); background: transparent; overflow: hidden; }
+  textarea { background: transparent; color: transparent; caret-color: var(--text); outline: none; resize: none; overflow: auto; z-index: 1; }
+  textarea::selection { background: rgba(99,102,241,0.35); }
+  /* Highlight token colors */
+  .hl-delim    { color: #f472b6; font-weight: 600; }
+  .hl-directive{ color: #fb923c; }
+  .hl-keyword  { color: #a78bfa; }
+  .hl-arrow    { color: #34d399; }
+  .hl-string   { color: #86efac; }
+  .hl-modifier { color: #60a5fa; }
+  .hl-comment  { color: #475569; font-style: italic; }
+  .hl-hex      { color: #fbbf24; }
   .preview-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
   .preview-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); min-height: 0; cursor: grab; user-select: none; position: relative; }
   .preview-area.dragging { cursor: grabbing; }
@@ -90,6 +108,11 @@
   .loader { display: none; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: auto; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .zoom-controls { display: flex; gap: 0.3rem; margin-left: auto; }
+  .theme-picker { display: flex; gap: 0; border-radius: 5px; overflow: hidden; border: 1px solid var(--border); margin-right: 0.5rem; }
+  .theme-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; padding: 0.22rem 0.55rem; border: none; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; border-right: 1px solid var(--border); white-space: nowrap; }
+  .theme-btn:last-child { border-right: none; }
+  .theme-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .theme-btn.active { background: rgba(99,102,241,0.2); color: var(--accent2); }
   .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.6rem 1.2rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 600; z-index: 999; transform: translateY(20px); opacity: 0; transition: all 0.25s; pointer-events: none; }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast.success { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: #34d399; }
@@ -178,12 +201,22 @@
       </div>
     </div>
 
-    <textarea id="code" spellcheck="false"></textarea>
+    <div class="editor-wrapper">
+      <div class="highlight-layer" id="highlight-layer" aria-hidden="true"></div>
+      <textarea id="code" spellcheck="false"></textarea>
+    </div>
   </div>
 
   <div class="preview-panel">
     <div class="panel-header">
       <span class="dot"></span> diagram output
+      <div class="theme-picker" id="theme-picker">
+        <button class="theme-btn active" onclick="setTheme('', this)">default</button>
+        <button class="theme-btn" onclick="setTheme('materia', this)">light</button>
+        <button class="theme-btn" onclick="setTheme('cyborg', this)">dark</button>
+        <button class="theme-btn" onclick="setTheme('sketchy', this)">sketch</button>
+        <button class="theme-btn" onclick="setTheme('hacker', this)">hacker</button>
+      </div>
       <div class="zoom-controls">
         <button onclick="zoom(-0.15)">&#8722;</button>
         <button onclick="zoom(0.15)">+</button>
@@ -606,6 +639,7 @@ let debounceTimer;
 let currentEncodedUrl = null;
 let activeExample = 'sequence';
 let activePalTab = 'participants';
+let currentTheme = '';
 
 // --- Tab system ---
 let nextTabId = 2;
@@ -646,6 +680,7 @@ function switchTab(id) {
   activeTabId = id;
   const tab = tabs.find(t => t.id === id);
   document.getElementById('code').value = tab.code;
+  updateHighlight();
   currentEncodedUrl = tab.encodedUrl || null;
   setDownloadButtons(!!currentEncodedUrl);
   if (currentEncodedUrl) {
@@ -668,6 +703,7 @@ function addTab() {
   tabs.push({ id, name: `Diagram ${id}`, code: '@startuml\n\n\n@enduml', encodedUrl: null });
   activeTabId = id;
   document.getElementById('code').value = tabs[tabs.length - 1].code;
+  updateHighlight();
   currentEncodedUrl = null;
   setDownloadButtons(false);
   document.getElementById('diagram-img').style.display = 'none';
@@ -730,11 +766,60 @@ function renameTab(id, e) {
   nameEl.addEventListener('keydown', onKey);
 }
 
+// --- Syntax Highlighting ---
+const HL_KEYWORDS = [
+  'actor','participant','database','queue','entity','boundary','control','cloud','collections',
+  'class','abstract','interface','enum','package','namespace','rectangle','node','component',
+  'artifact','folder','frame','storage','agent','usecase',
+  'title','header','footer','note','autonumber','ref','box','together',
+  'alt','else','end','loop','opt','group','par','critical','break',
+  'start','stop','if','then','endif','while','endwhile','fork','detach',
+  'state','activate','deactivate','destroy','hide','show','as',
+  'left','right','direction','skinparam','return','concise','robust'
+];
+const HL_KW_RE = new RegExp(`\\b(${HL_KEYWORDS.join('|')})\\b`, 'g');
+
+function highlightLine(raw) {
+  let s = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (/^\s*'/.test(s)) return `<span class="hl-comment">${s}</span>`;
+  s = s.replace(/(@(?:start|end)\w+)/g, '<span class="hl-delim">$1</span>');
+  s = s.replace(/(!\w+)/g, '<span class="hl-directive">$1</span>');
+  s = s.replace(/(->+|<-+|--\|>|<\|--|\.\.>|<\.\.|<->|<\|\.\.|\.\.\|>|\*--|o--|--\*|--o|-(?:up|down|left|right)->|<-(?:up|down|left|right)-)/g, '<span class="hl-arrow">$1</span>');
+  s = s.replace(/(==\s*.+?\s*==)/g, '<span class="hl-directive">$1</span>');
+  s = s.replace(HL_KW_RE, '<span class="hl-keyword">$1</span>');
+  s = s.replace(/(\{[^}]+\})/g, '<span class="hl-modifier">$1</span>');
+  s = s.replace(/^(\s*)([+\-#~])(?=\s*\w)/, '$1<span class="hl-modifier">$2</span>');
+  s = s.replace(/(#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b)/g, '<span class="hl-hex">$1</span>');
+  s = s.replace(/(&quot;)([^&]*)(&quot;)/g, '$1<span class="hl-string">$2</span>$3');
+  s = s.replace(/(\s)(\'[^<]*)$/, '$1<span class="hl-comment">$2</span>');
+  return s;
+}
+
+function highlight(code) {
+  return code.split('\n').map(highlightLine).join('\n');
+}
+
+function updateHighlight() {
+  const ta = document.getElementById('code');
+  const hl = document.getElementById('highlight-layer');
+  hl.innerHTML = highlight(ta.value) + '\n';
+  hl.scrollTop = ta.scrollTop;
+  hl.scrollLeft = ta.scrollLeft;
+}
+
+document.getElementById('code').addEventListener('scroll', () => {
+  const hl = document.getElementById('highlight-layer');
+  hl.scrollTop = document.getElementById('code').scrollTop;
+  hl.scrollLeft = document.getElementById('code').scrollLeft;
+});
+
 // Init tabs
 document.getElementById('code').value = tabs[0].code;
 renderTabs();
+updateHighlight();
 
 document.getElementById('code').addEventListener('input', () => {
+  updateHighlight();
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(renderDiagram, 1200);
 });
@@ -777,6 +862,7 @@ function insertSnippet(snippet) {
   ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
   ta.selectionStart = ta.selectionEnd = start + snippet.length;
   ta.focus();
+  updateHighlight();
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(renderDiagram, 1200);
 }
@@ -788,6 +874,7 @@ function loadExample(name, el) {
   const tab = tabs.find(t => t.id === activeTabId);
   if (tab) tab.name = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('code').value = EXAMPLES[name];
+  updateHighlight();
   resetView();
   renderTabs();
   renderDiagram();
@@ -876,6 +963,7 @@ function loadFromHistory(idx) {
   const tab = tabs.find(t => t.id === activeTabId);
   if (tab) { tab.name = entry.title; tab.encodedUrl = entry.encodedUrl; }
   document.getElementById('code').value = entry.code;
+  updateHighlight();
   renderTabs();
   closeHistory();
   resetView();
@@ -964,8 +1052,22 @@ function setDownloadButtons(enabled) {
   });
 }
 
+function setTheme(theme, el) {
+  currentTheme = theme;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderDiagram();
+}
+
+function applyTheme(code) {
+  if (!currentTheme) return code;
+  // strip any existing !theme line then prepend ours
+  const stripped = code.replace(/^!theme\s+\S+\s*/m, '');
+  return stripped.replace(/^(@start\w+)/, `$1\n!theme ${currentTheme}`);
+}
+
 async function renderDiagram() {
-  const code = document.getElementById('code').value.trim();
+  const code = applyTheme(document.getElementById('code').value.trim());
   if (!code) return;
   const loader = document.getElementById('loader');
   const img = document.getElementById('diagram-img');
