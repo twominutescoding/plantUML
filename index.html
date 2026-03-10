@@ -55,6 +55,12 @@
   .hist-clear { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; padding: 0.25rem 0.6rem; border-radius: 5px; border: 1px solid rgba(248,113,113,0.3); background: transparent; color: #f87171; cursor: pointer; transition: all 0.15s; }
   .hist-clear:hover { background: rgba(248,113,113,0.1); }
 
+  /* Shortcuts bar */
+  .shortcuts-bar { padding: 0.3rem 2rem; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+  .sc-item { display: flex; align-items: center; gap: 0.35rem; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; color: var(--muted); }
+  .sc-key { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 3px; padding: 0.05rem 0.35rem; color: var(--text); font-size: 0.56rem; white-space: nowrap; }
+  .sc-desc { color: var(--muted); }
+
   /* Examples bar */
   .examples-bar { padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
   .ex-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-right: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -207,6 +213,16 @@
     <button class="btn-primary" onclick="renderDiagram()">&#9654; Render</button>
   </div>
 </header>
+
+<div class="shortcuts-bar">
+  <div class="sc-item"><span class="sc-key">Ctrl+Enter</span><span class="sc-desc">Render</span></div>
+  <div class="sc-item"><span class="sc-key">Ctrl+S</span><span class="sc-desc">Download SVG</span></div>
+  <div class="sc-item"><span class="sc-key">Ctrl+/</span><span class="sc-desc">Toggle comment</span></div>
+  <div class="sc-item"><span class="sc-key">Ctrl+Shift+F</span><span class="sc-desc">Fit to screen</span></div>
+  <div class="sc-item"><span class="sc-key">Esc</span><span class="sc-desc">Exit diff</span></div>
+  <div class="sc-item"><span class="sc-key">Middle click</span><span class="sc-desc">Close tab</span></div>
+  <div class="sc-item"><span class="sc-key">Dbl click tab</span><span class="sc-desc">Rename tab</span></div>
+</div>
 
 <div class="examples-bar">
   <span class="ex-label">Examples:</span>
@@ -1140,11 +1156,8 @@ function saveObjectToLibrary(ref, type, e) {
 
 function insertSnippet(snippet) {
   const ta = document.getElementById('code');
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  ta.value = ta.value.slice(0, start) + snippet + ta.value.slice(end);
-  ta.selectionStart = ta.selectionEnd = start + snippet.length;
   ta.focus();
+  document.execCommand('insertText', false, snippet);
   updateHighlight();
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(renderDiagram, 1200);
@@ -1298,11 +1311,11 @@ document.addEventListener('keydown', e => {
     const lineStart = start;
     const isCommented = ta.value.slice(lineStart, lineStart + 1) === "'";
     if (isCommented) {
-      ta.value = ta.value.slice(0, lineStart) + ta.value.slice(lineStart + 1);
-      ta.selectionStart = ta.selectionEnd = Math.max(lineStart, ta.selectionStart - 1);
+      ta.setSelectionRange(lineStart, lineStart + 1);
+      document.execCommand('delete');
     } else {
-      ta.value = ta.value.slice(0, lineStart) + "'" + ta.value.slice(lineStart);
-      ta.selectionStart = ta.selectionEnd = ta.selectionStart + 1;
+      ta.setSelectionRange(lineStart, lineStart);
+      document.execCommand('insertText', false, "'");
     }
     updateHighlight();
     clearTimeout(debounceTimer);
