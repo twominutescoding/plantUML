@@ -725,6 +725,7 @@ function renderTabs() {
     el.dataset.id = tab.id;
     el.innerHTML = `<span class="tab-name" ondblclick="renameTab(${tab.id},event)">${tab.name}</span><span class="tab-close" onclick="closeTab(${tab.id},event)">&#x2715;</span>`;
     el.addEventListener('click', () => switchTab(tab.id));
+    el.addEventListener('mousedown', e => { if (e.button === 1) { e.preventDefault(); closeTab(tab.id, e); } });
     bar.insertBefore(el, addBtn);
   });
 }
