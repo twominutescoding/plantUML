@@ -152,6 +152,9 @@
   .btn-diff:hover { color: var(--text); background: rgba(255,255,255,0.05); }
   .btn-diff.active { background: rgba(99,102,241,0.2); border-color: var(--accent); color: var(--accent2); }
   .status-bar { padding: 0.5rem 1rem; border-top: 1px solid var(--border); font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); display: flex; gap: 1.5rem; background: var(--surface); align-items: center; flex-shrink: 0; }
+  .status-right { margin-left: auto; display: flex; gap: 1.2rem; align-items: center; }
+  .tab-dirty { width: 5px; height: 5px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; opacity: 0.85; }
+  .tab-type { font-size: 0.48rem; padding: 0.05rem 0.28rem; border-radius: 3px; background: rgba(99,102,241,0.12); color: var(--muted); border: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; }
   .status-ok { color: var(--green); } .status-err { color: #f87171; }
   .loader { display: none; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: auto; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -321,6 +324,10 @@
     <div class="status-bar">
       <span id="status-text" class="status-ok">&#9679; ready</span>
       <span id="render-time"></span>
+      <div class="status-right">
+        <span id="cursor-pos">Ln 1, Col 1</span>
+        <span id="zoom-pct">100%</span>
+      </div>
     </div>
   </div>
 </div>
@@ -746,17 +753,30 @@ let activeTabId = 1;
 
 if (sharedParam) document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'));
 
+const dirtyTabs = new Set();
+
+function detectDiagramType(code) {
+  if (/\b(participant|actor|autonumber)\b/i.test(code)) return 'seq';
+  if (/\b(class|interface|abstract)\b/i.test(code)) return 'class';
+  if (/^:(.*);$/m.test(code) || (/\bstart\b/i.test(code) && /\bstop\b/i.test(code))) return 'flow';
+  if (/\busecase\b/i.test(code)) return 'usecase';
+  if (/\[\*\]\s*-->/.test(code)) return 'state';
+  if (/\bcomponent\b/i.test(code) || /\[[\w\s]+\]/.test(code)) return 'cmp';
+  return '';
+}
+
 function renderTabs() {
   const bar = document.getElementById('tab-bar');
   const addBtn = bar.querySelector('.tab-add');
-  // remove existing tab els
   bar.querySelectorAll('.tab').forEach(el => el.remove());
-  // insert before add button
   tabs.forEach(tab => {
     const el = document.createElement('div');
     el.className = 'tab' + (tab.id === activeTabId ? ' active' : '');
     el.dataset.id = tab.id;
-    el.innerHTML = `<span class="tab-name" ondblclick="renameTab(${tab.id},event)">${tab.name}</span><span class="tab-close" onclick="closeTab(${tab.id},event)">&#x2715;</span>`;
+    const type = detectDiagramType(tab.id === activeTabId ? document.getElementById('code').value : tab.code);
+    const dirtyDot = dirtyTabs.has(tab.id) ? '<span class="tab-dirty"></span>' : '';
+    const typeBadge = type ? `<span class="tab-type">${type}</span>` : '';
+    el.innerHTML = `${dirtyDot}<span class="tab-name" ondblclick="renameTab(${tab.id},event)">${tab.name}</span>${typeBadge}<span class="tab-close" onclick="closeTab(${tab.id},event)">&#x2715;</span>`;
     el.addEventListener('click', () => switchTab(tab.id));
     el.addEventListener('mousedown', e => { if (e.button === 1) { e.preventDefault(); closeTab(tab.id, e); } });
     bar.insertBefore(el, addBtn);
@@ -968,8 +988,18 @@ document.getElementById('code').value = initTab ? initTab.code : tabs[0].code;
 renderTabs();
 updateHighlight();
 
+function updateCursorPos() {
+  const ta = document.getElementById('code');
+  const val = ta.value.substring(0, ta.selectionStart);
+  const lines = val.split('\n');
+  document.getElementById('cursor-pos').textContent = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
+}
+
 document.getElementById('code').addEventListener('input', () => {
   updateHighlight();
+  updateCursorPos();
+  dirtyTabs.add(activeTabId);
+  renderTabs();
   clearTimeout(debounceTimer);
   if (document.getElementById('auto-render-chk').checked) {
     debounceTimer = setTimeout(() => { renderDiagram(); autosave(); }, 1200);
@@ -977,6 +1007,9 @@ document.getElementById('code').addEventListener('input', () => {
     debounceTimer = setTimeout(autosave, 5000);
   }
 });
+
+document.getElementById('code').addEventListener('click', updateCursorPos);
+document.getElementById('code').addEventListener('keyup', updateCursorPos);
 
 buildPalette();
 
@@ -1352,9 +1385,12 @@ document.addEventListener('keydown', e => {
   }
   // Escape → exit diff mode
   if (e.key === 'Escape' && diffMode) { exitDiff(); return; }
+  // Tab → 2 spaces
+  if (e.key === 'Tab' && focused === ta) { e.preventDefault(); document.execCommand('insertText', false, '  '); return; }
 });
 function applyTransform() {
   document.getElementById('diagram-img').style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+  document.getElementById('zoom-pct').textContent = `${Math.round(zoomLevel * 100)}%`;
 }
 
 // Pan & zoom with mouse
@@ -1492,6 +1528,8 @@ async function renderDiagram() {
     applyTransform();
     setDownloadButtons(true);
     saveToHistory(code, encoded);
+    dirtyTabs.delete(activeTabId);
+    renderTabs();
   };
   img.onerror = async () => {
     if (!img.dataset.retried) {
