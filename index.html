@@ -41,6 +41,13 @@
   .btn-share { color: #60a5fa; border-color: rgba(96,165,250,0.3); }
   .btn-share:hover { background: rgba(96,165,250,0.1) !important; }
   .btn-history { color: #fb923c; border-color: rgba(251,146,60,0.3); }
+  .auto-render-toggle { display: flex; align-items: center; gap: 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--muted); }
+  .toggle-switch { position: relative; width: 28px; height: 16px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 16px; cursor: pointer; transition: background 0.2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 10px; height: 10px; left: 3px; top: 3px; background: var(--muted); border-radius: 50%; transition: transform 0.2s, background 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: rgba(99,102,241,0.35); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(12px); background: var(--accent2); }
   .btn-history:hover { background: rgba(251,146,60,0.1) !important; }
   /* History modal */
   .hist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
@@ -213,6 +220,13 @@
       <button class="dl-btn pdf"  id="btn-pdf"  onclick="downloadDiagram('pdf')"  disabled><span class="icon">PDF</span><span class="spinner"></span></button>
       <button class="dl-btn html" id="btn-html" onclick="downloadHTML()"          disabled><span class="icon">HTML</span><span class="spinner"></span></button>
     </div>
+    <label class="auto-render-toggle" title="Auto-render on change">
+      <span>auto</span>
+      <span class="toggle-switch">
+        <input type="checkbox" id="auto-render-chk">
+        <span class="toggle-slider"></span>
+      </span>
+    </label>
     <button class="btn-primary" onclick="renderDiagram()">&#9654; Render</button>
   </div>
 </header>
@@ -957,7 +971,11 @@ updateHighlight();
 document.getElementById('code').addEventListener('input', () => {
   updateHighlight();
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => { renderDiagram(); autosave(); }, 1200);
+  if (document.getElementById('auto-render-chk').checked) {
+    debounceTimer = setTimeout(() => { renderDiagram(); autosave(); }, 1200);
+  } else {
+    debounceTimer = setTimeout(autosave, 5000);
+  }
 });
 
 buildPalette();
@@ -1166,7 +1184,9 @@ function insertSnippet(snippet) {
   document.execCommand('insertText', false, snippet);
   updateHighlight();
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(renderDiagram, 1200);
+  if (document.getElementById('auto-render-chk').checked) {
+    debounceTimer = setTimeout(renderDiagram, 1200);
+  }
 }
 
 function loadExample(name, el) {
@@ -1325,7 +1345,9 @@ document.addEventListener('keydown', e => {
     }
     updateHighlight();
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(renderDiagram, 1200);
+    if (document.getElementById('auto-render-chk').checked) {
+      debounceTimer = setTimeout(renderDiagram, 1200);
+    }
     return;
   }
   // Escape → exit diff mode
@@ -1471,7 +1493,7 @@ async function renderDiagram() {
     setDownloadButtons(true);
     saveToHistory(code, encoded);
   };
-  img.onerror = () => {
+  img.onerror = async () => {
     if (!img.dataset.retried) {
       img.dataset.retried = '1';
       status.textContent = '\u25CF server busy \u2014 retrying...';
@@ -1481,7 +1503,12 @@ async function renderDiagram() {
     }
     delete img.dataset.retried;
     loader.style.display = 'none';
-    status.textContent = '\u25CF render error \u2014 check syntax or try again';
+    let httpCode = '';
+    try {
+      const r = await fetch(getUrl('svg', encoded));
+      httpCode = ` [HTTP ${r.status}]`;
+    } catch {}
+    status.textContent = `\u25CF render error${httpCode} \u2014 check syntax or try again`;
     status.className = 'status-err';
     currentEncodedUrl = null;
   };
@@ -1607,6 +1634,7 @@ async function downloadPDF() {
   btn.classList.remove('loading');
   btn.disabled = false;
 }
+
 
 
 const script = document.createElement('script');
