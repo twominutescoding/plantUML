@@ -20,9 +20,10 @@
   .dl-label { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 0.38rem 0.7rem; background: rgba(255,255,255,0.04); color: var(--muted); display: flex; align-items: center; gap: 0.4rem; border-right: 1px solid var(--border); letter-spacing: 0.5px; }
   .dl-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.38rem 0.85rem; border: none; border-right: 1px solid var(--border); background: transparent; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 0.35rem; font-weight: 600; }
   .dl-btn:last-child { border-right: none; }
-  .dl-btn.svg { color: #34d399; } .dl-btn.svg:hover { background: rgba(52,211,153,0.12); }
-  .dl-btn.png { color: #60a5fa; } .dl-btn.png:hover { background: rgba(96,165,250,0.12); }
-  .dl-btn.pdf { color: #f87171; } .dl-btn.pdf:hover { background: rgba(248,113,113,0.12); }
+  .dl-btn.svg  { color: #34d399; } .dl-btn.svg:hover  { background: rgba(52,211,153,0.12); }
+  .dl-btn.png  { color: #60a5fa; } .dl-btn.png:hover  { background: rgba(96,165,250,0.12); }
+  .dl-btn.pdf  { color: #f87171; } .dl-btn.pdf:hover  { background: rgba(248,113,113,0.12); }
+  .dl-btn.html { color: #e879f9; } .dl-btn.html:hover { background: rgba(232,121,249,0.12); }
   .dl-btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .dl-btn .spinner { width: 10px; height: 10px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; display: none; }
   .dl-btn.loading .spinner { display: inline-block; }
@@ -100,9 +101,24 @@
   .hl-comment  { color: #475569; font-style: italic; }
   .hl-hex      { color: #fbbf24; }
   .preview-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .preview-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); min-height: 0; cursor: grab; user-select: none; position: relative; }
+  .preview-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); min-height: 0; cursor: grab; user-select: none; position: relative; gap: 1rem; padding: 1rem; }
   .preview-area.dragging { cursor: grabbing; }
   #diagram-img { border-radius: 8px; box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 4px 30px rgba(0,0,0,0.5); border: 1px solid var(--border); pointer-events: none; max-width: 85%; transform-origin: center center; }
+  /* Diff view */
+  .diff-pane { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; overflow: auto; }
+  .preview-area.diff-active { align-items: flex-start; padding-top: 1.5rem; cursor: default; }
+  .preview-area.diff-active #diagram-img { max-width: 100%; transform: none !important; }
+  #diff-before-pane { display: none; }
+  .preview-area.diff-active #diff-before-pane { display: flex; }
+  .diff-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; padding: 0.18rem 0.6rem; border-radius: 4px; border: 1px solid; }
+  .diff-label-before { color: #f87171; border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.08); }
+  .diff-label-after  { color: #34d399; border-color: rgba(52,211,153,0.35);  background: rgba(52,211,153,0.08); }
+  #diff-after-label { display: none; }
+  .preview-area.diff-active #diff-after-label { display: inline; }
+  .diff-img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+  .btn-diff { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; padding: 0.22rem 0.6rem; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; margin-right: 0.4rem; }
+  .btn-diff:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .btn-diff.active { background: rgba(99,102,241,0.2); border-color: var(--accent); color: var(--accent2); }
   .status-bar { padding: 0.5rem 1rem; border-top: 1px solid var(--border); font-size: 0.65rem; font-family: 'JetBrains Mono', monospace; color: var(--muted); display: flex; gap: 1.5rem; background: var(--surface); align-items: center; flex-shrink: 0; }
   .status-ok { color: var(--green); } .status-err { color: #f87171; }
   .loader { display: none; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: auto; }
@@ -165,9 +181,10 @@
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export
       </span>
-      <button class="dl-btn svg" id="btn-svg" onclick="downloadDiagram('svg')" disabled><span class="icon">SVG</span><span class="spinner"></span></button>
-      <button class="dl-btn png" id="btn-png" onclick="downloadDiagram('png')" disabled><span class="icon">PNG</span><span class="spinner"></span></button>
-      <button class="dl-btn pdf" id="btn-pdf" onclick="downloadDiagram('pdf')" disabled><span class="icon">PDF</span><span class="spinner"></span></button>
+      <button class="dl-btn svg"  id="btn-svg"  onclick="downloadDiagram('svg')"  disabled><span class="icon">SVG</span><span class="spinner"></span></button>
+      <button class="dl-btn png"  id="btn-png"  onclick="downloadDiagram('png')"  disabled><span class="icon">PNG</span><span class="spinner"></span></button>
+      <button class="dl-btn pdf"  id="btn-pdf"  onclick="downloadDiagram('pdf')"  disabled><span class="icon">PDF</span><span class="spinner"></span></button>
+      <button class="dl-btn html" id="btn-html" onclick="downloadHTML()"          disabled><span class="icon">HTML</span><span class="spinner"></span></button>
     </div>
     <button class="btn-primary" onclick="renderDiagram()">&#9654; Render</button>
   </div>
@@ -190,7 +207,7 @@
       <button class="tab-add" onclick="addTab()" title="New tab">+</button>
     </div>
 
-    <div class="palette" id="palette">
+    <div class="palette open" id="palette">
       <div class="palette-header" onclick="togglePalette()">
         <span class="palette-title">&#8862; components</span>
         <span class="palette-toggle">&#9660;</span>
@@ -210,6 +227,7 @@
   <div class="preview-panel">
     <div class="panel-header">
       <span class="dot"></span> diagram output
+      <button class="btn-diff" id="btn-diff" onclick="toggleDiff()">⟺ Diff</button>
       <div class="theme-picker" id="theme-picker">
         <button class="theme-btn active" onclick="setTheme('', this)">default</button>
         <button class="theme-btn" onclick="setTheme('materia', this)">light</button>
@@ -223,9 +241,16 @@
         <button onclick="resetView()">1:1</button>
       </div>
     </div>
-    <div class="preview-area">
+    <div class="preview-area" id="preview-area">
       <div class="loader" id="loader"></div>
-      <img id="diagram-img" style="display:none;" alt="PlantUML Diagram" />
+      <div class="diff-pane" id="diff-before-pane">
+        <span class="diff-label diff-label-before">before</span>
+        <img class="diff-img" id="diff-before-img" alt="Before" />
+      </div>
+      <div class="diff-pane" id="diff-after-pane">
+        <span class="diff-label diff-label-after" id="diff-after-label">after</span>
+        <img id="diagram-img" style="display:none;" alt="PlantUML Diagram" />
+      </div>
     </div>
     <div class="status-bar">
       <span id="status-text" class="status-ok">&#9679; ready</span>
@@ -681,6 +706,7 @@ function switchTab(id) {
   const tab = tabs.find(t => t.id === id);
   document.getElementById('code').value = tab.code;
   updateHighlight();
+  exitDiff();
   currentEncodedUrl = tab.encodedUrl || null;
   setDownloadButtons(!!currentEncodedUrl);
   if (currentEncodedUrl) {
@@ -875,6 +901,7 @@ function loadExample(name, el) {
   if (tab) tab.name = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('code').value = EXAMPLES[name];
   updateHighlight();
+  exitDiff();
   resetView();
   renderTabs();
   renderDiagram();
@@ -1047,9 +1074,34 @@ function getUrl(format, encoded) {
 }
 
 function setDownloadButtons(enabled) {
-  ['btn-svg','btn-png','btn-pdf'].forEach(id => {
+  ['btn-svg','btn-png','btn-pdf','btn-html'].forEach(id => {
     document.getElementById(id).disabled = !enabled;
   });
+}
+
+// --- Diff mode ---
+let diffMode = false;
+
+function toggleDiff() {
+  if (!diffMode) {
+    if (!currentEncodedUrl) { showToast('\u2715 Render a diagram first'); return; }
+    diffMode = true;
+    document.getElementById('diff-before-img').src = getUrl('svg', currentEncodedUrl);
+    document.getElementById('preview-area').classList.add('diff-active');
+    document.getElementById('btn-diff').classList.add('active');
+    // disable pan/zoom
+    document.getElementById('preview-area').style.cursor = 'default';
+    showToast('\u2713 Diff mode — now edit and re-render');
+  } else {
+    exitDiff();
+  }
+}
+
+function exitDiff() {
+  diffMode = false;
+  document.getElementById('preview-area').classList.remove('diff-active');
+  document.getElementById('btn-diff').classList.remove('active');
+  document.getElementById('preview-area').style.cursor = '';
 }
 
 function setTheme(theme, el) {
@@ -1140,6 +1192,61 @@ async function downloadDiagram(format) {
   } catch {
     window.open(url, '_blank');
     showToast(`\u2197 Opened in new tab \u2014 save manually`);
+  }
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+async function downloadHTML() {
+  if (!currentEncodedUrl) return;
+  const btn = document.getElementById('btn-html');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  try {
+    const res = await fetch(getUrl('svg', currentEncodedUrl));
+    if (!res.ok) throw new Error();
+    const svgText = await res.text();
+    const tab = tabs.find(t => t.id === activeTabId);
+    const title = (tab ? tab.name : 'Diagram').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const sourceEscaped = document.getElementById('code').value
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title}</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.5rem; gap: 2rem; }
+  h1 { font-size: 1.6rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; }
+  .diagram { background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; max-width: 900px; width: 100%; display: flex; justify-content: center; }
+  .diagram svg { max-width: 100%; height: auto; }
+  details { max-width: 900px; width: 100%; }
+  summary { font-size: 0.8rem; font-family: monospace; color: #64748b; cursor: pointer; padding: 0.4rem 0; user-select: none; }
+  summary:hover { color: #334155; }
+  pre { margin-top: 0.75rem; background: #1e293b; color: #e2e8f0; padding: 1.25rem; border-radius: 8px; font-family: monospace; font-size: 0.75rem; line-height: 1.7; overflow-x: auto; white-space: pre; }
+  .footer { font-size: 0.7rem; color: #94a3b8; font-family: monospace; }
+</style>
+</head>
+<body>
+  <h1>${title}</h1>
+  <div class="diagram">${svgText}</div>
+  <details>
+    <summary>&#9654; PlantUML source</summary>
+    <pre>${sourceEscaped}</pre>
+  </details>
+  <p class="footer">Generated with PlantUML Preview</p>
+</body>
+</html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = getFileName('html');
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast('\u2713 Standalone HTML exported');
+  } catch {
+    showToast('\u2715 HTML export failed \u2014 try SVG');
   }
   btn.classList.remove('loading');
   btn.disabled = false;
