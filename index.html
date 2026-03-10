@@ -81,6 +81,21 @@
   .tab-close:hover { opacity: 1 !important; background: rgba(248,113,113,0.2); color: #f87171; }
   .tab-add { padding: 0.5rem 0.7rem; color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; background: transparent; border: none; border-left: none; transition: all 0.15s; flex-shrink: 0; margin-left: auto; }
   .tab-add:hover { color: var(--green); background: rgba(52,211,153,0.08); }
+  /* Objects panel */
+  .obj-panel { border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .obj-panel-hdr { padding: 0.38rem 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .obj-panel-title { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .obj-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid rgba(99,102,241,0.3); border-radius: 10px; padding: 0.05rem 0.45rem; }
+  .obj-pills { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0 0.75rem 0.5rem; min-height: 26px; }
+  .obj-pill { display: inline-flex; align-items: center; gap: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.15rem 0.35rem 0.15rem 0.5rem; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); cursor: pointer; transition: all 0.15s; white-space: nowrap; color: var(--text); }
+  .obj-pill:hover { border-color: var(--accent); background: rgba(99,102,241,0.12); color: var(--accent2); }
+  .obj-pill-type { color: var(--muted); font-size: 0.52rem; }
+  .obj-pill-count { background: rgba(99,102,241,0.2); color: var(--accent2); border-radius: 8px; padding: 0 0.3rem; font-size: 0.52rem; }
+  .obj-none { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--muted); font-style: italic; }
+  /* Line numbers */
+  .editor-area { flex: 1; display: flex; min-height: 0; }
+  .line-numbers { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; line-height: 1.7; padding: 1rem 0.5rem 1rem 0.6rem; color: var(--muted); text-align: right; background: rgba(0,0,0,0.12); border-right: 1px solid var(--border); user-select: none; overflow: hidden; flex-shrink: 0; min-width: 2.4rem; opacity: 0.6; }
+  .line-numbers span { display: block; }
   .editor-wrapper { flex: 1; display: grid; min-height: 0; }
   .editor-wrapper > * {
     grid-area: 1 / 1 / 2 / 2;
@@ -101,14 +116,16 @@
   .hl-comment  { color: #475569; font-style: italic; }
   .hl-hex      { color: #fbbf24; }
   .preview-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-  .preview-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); min-height: 0; cursor: grab; user-select: none; position: relative; gap: 1rem; padding: 1rem; }
+  .preview-area { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg); min-height: 0; cursor: grab; user-select: none; position: relative; }
   .preview-area.dragging { cursor: grabbing; }
   #diagram-img { border-radius: 8px; box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 4px 30px rgba(0,0,0,0.5); border: 1px solid var(--border); pointer-events: none; max-width: 85%; transform-origin: center center; }
-  /* Diff view */
-  .diff-pane { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; overflow: auto; }
-  .preview-area.diff-active { align-items: flex-start; padding-top: 1.5rem; cursor: default; }
-  .preview-area.diff-active #diagram-img { max-width: 100%; transform: none !important; }
+  /* Diff view — pane styles only active in diff mode */
   #diff-before-pane { display: none; }
+  #diff-after-pane { display: contents; } /* transparent wrapper in normal mode */
+  .preview-area.diff-active { align-items: flex-start; padding: 1.5rem 1rem 1rem; gap: 1rem; cursor: default; }
+  .preview-area.diff-active #diff-before-pane,
+  .preview-area.diff-active #diff-after-pane { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; overflow: auto; }
+  .preview-area.diff-active #diagram-img { max-width: 100%; transform: none !important; }
   .preview-area.diff-active #diff-before-pane { display: flex; }
   .diff-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; padding: 0.18rem 0.6rem; border-radius: 4px; border: 1px solid; }
   .diff-label-before { color: #f87171; border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.08); }
@@ -146,7 +163,8 @@
   .pal-tab { font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; padding: 0.18rem 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.3px; }
   .pal-tab:hover { color: var(--text); border-color: var(--muted); background: none; }
   .pal-tab.active { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent2); }
-  .pal-items { display: flex; flex-wrap: wrap; gap: 0.28rem; }
+  .pal-items { display: flex; flex-wrap: wrap; gap: 0.28rem; max-height: 160px; overflow-y: auto; }
+  .pal-items::-webkit-scrollbar { width: 3px; } .pal-items::-webkit-scrollbar-thumb { background: var(--border); }
   .pal-btn { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.2rem 0.55rem; border-radius: 4px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .pal-btn:hover { background: rgba(99,102,241,0.15); border-color: var(--accent); color: var(--accent2); }
 
@@ -218,9 +236,23 @@
       </div>
     </div>
 
-    <div class="editor-wrapper">
-      <div class="highlight-layer" id="highlight-layer" aria-hidden="true"></div>
-      <textarea id="code" spellcheck="false"></textarea>
+    <!-- Objects panel -->
+    <div class="obj-panel">
+      <div class="obj-panel-hdr">
+        <span class="obj-panel-title">objects</span>
+        <span class="obj-badge" id="obj-badge">0</span>
+      </div>
+      <div class="obj-pills" id="obj-pills">
+        <span class="obj-none">No objects detected</span>
+      </div>
+    </div>
+
+    <div class="editor-area">
+      <div class="line-numbers" id="line-numbers"><span>1</span></div>
+      <div class="editor-wrapper">
+        <div class="highlight-layer" id="highlight-layer" aria-hidden="true"></div>
+        <textarea id="code" spellcheck="false"></textarea>
+      </div>
     </div>
   </div>
 
@@ -239,6 +271,7 @@
         <button onclick="zoom(-0.15)">&#8722;</button>
         <button onclick="zoom(0.15)">+</button>
         <button onclick="resetView()">1:1</button>
+        <button onclick="fitToScreen()" title="Fit to screen">&#8689;</button>
       </div>
     </div>
     <div class="preview-area" id="preview-area">
@@ -832,39 +865,169 @@ function updateHighlight() {
   hl.innerHTML = highlight(ta.value) + '\n';
   hl.scrollTop = ta.scrollTop;
   hl.scrollLeft = ta.scrollLeft;
+  updateObjectsPanel();
+  updateLineNumbers();
 }
 
 document.getElementById('code').addEventListener('scroll', () => {
+  const ta = document.getElementById('code');
   const hl = document.getElementById('highlight-layer');
-  hl.scrollTop = document.getElementById('code').scrollTop;
-  hl.scrollLeft = document.getElementById('code').scrollLeft;
+  hl.scrollTop = ta.scrollTop;
+  hl.scrollLeft = ta.scrollLeft;
+  document.getElementById('line-numbers').scrollTop = ta.scrollTop;
 });
 
+// --- Autosave ---
+const AUTOSAVE_KEY = 'plantuml_autosave';
+
+function autosave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+      tabs: tabs.map(t => ({ id: t.id, name: t.name, code: t.code })),
+      activeTabId,
+      nextTabId,
+      ts: Date.now()
+    }));
+  } catch {}
+}
+
+function loadAutosave() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null');
+    if (!saved || !saved.tabs || !saved.tabs.length) return false;
+    // only restore if saved within last 24h
+    if (Date.now() - saved.ts > 86400000) return false;
+    saved.tabs.forEach(t => { t.encodedUrl = null; });
+    tabs.length = 0;
+    saved.tabs.forEach(t => tabs.push(t));
+    activeTabId = saved.activeTabId;
+    nextTabId = saved.nextTabId || tabs.length + 1;
+    return true;
+  } catch { return false; }
+}
+
+// Restore autosaved session (unless share link is present)
+if (!sharedParam) loadAutosave();
+setInterval(autosave, 30000);
+
 // Init tabs
-document.getElementById('code').value = tabs[0].code;
+const initTab = tabs.find(t => t.id === activeTabId) || tabs[0];
+document.getElementById('code').value = initTab ? initTab.code : tabs[0].code;
 renderTabs();
 updateHighlight();
 
 document.getElementById('code').addEventListener('input', () => {
   updateHighlight();
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(renderDiagram, 1200);
+  debounceTimer = setTimeout(() => { renderDiagram(); autosave(); }, 1200);
 });
 
 buildPalette();
 
+// --- Object Parser ---
+const OBJ_TYPES = [
+  'actor','participant','database','queue','entity','boundary','control',
+  'cloud','collections','node','component','storage','agent','usecase',
+  'rectangle','package','namespace','frame','folder','state',
+  'interface','enum'
+];
+const OBJ_TYPE_ICON = {
+  actor:'act', participant:'ptcp', database:'db', queue:'q', entity:'ent',
+  boundary:'bnd', control:'ctrl', cloud:'cld', collections:'col', node:'node',
+  component:'cmp', storage:'str', agent:'agt', usecase:'uc',
+  rectangle:'rect', package:'pkg', namespace:'ns', frame:'frm', folder:'fld',
+  state:'st', interface:'ifc', enum:'enm', class:'cls', 'abstract class':'abs'
+};
+
+function parseObjects(code) {
+  const objects = [], seen = new Set();
+  const add = (type, display, ref) => {
+    const key = `${type}:${ref}`;
+    if (!seen.has(key)) { seen.add(key); objects.push({ type, display: display.trim(), ref: ref.trim() }); }
+  };
+  for (const line of code.split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith("'") || t.startsWith('@') || t.startsWith('!') || t.startsWith('skinparam')) continue;
+    // abstract class
+    let m;
+    m = t.match(/^abstract\s+class\s+"([^"]+)"\s+as\s+(\w+)/i); if (m) { add('abstract class', m[1], m[2]); continue; }
+    m = t.match(/^abstract\s+class\s+(\w+)\s+as\s+(\w+)/i);     if (m) { add('abstract class', m[1], m[2]); continue; }
+    m = t.match(/^abstract\s+class\s+"([^"]+)"/i);               if (m) { add('abstract class', m[1], m[1]); continue; }
+    m = t.match(/^abstract\s+class\s+(\w[\w.]*)/i);              if (m) { add('abstract class', m[1], m[1]); continue; }
+    // class
+    m = t.match(/^class\s+"([^"]+)"\s+as\s+(\w+)/i); if (m) { add('class', m[1], m[2]); continue; }
+    m = t.match(/^class\s+(\w+)\s+as\s+(\w+)/i);     if (m) { add('class', m[1], m[2]); continue; }
+    m = t.match(/^class\s+"([^"]+)"/i);               if (m) { add('class', m[1], m[1]); continue; }
+    m = t.match(/^class\s+(\w[\w.]*)/i);              if (m) { add('class', m[1], m[1]); continue; }
+    // [Component] notation
+    m = t.match(/^\[([^\]]+)\](?:\s+as\s+(\w+))?/);  if (m) { add('component', m[1], m[2] || m[1]); continue; }
+    // (Use Case) notation
+    m = t.match(/^\(([^)]+)\)(?:\s+as\s+(\w+))?/);   if (m) { add('usecase', m[1], m[2] || m[1]); continue; }
+    // all other keyword types
+    for (const type of OBJ_TYPES) {
+      const re1 = new RegExp(`^${type}\\s+"([^"]+)"\\s+as\\s+(\\w+)`, 'i');
+      const re2 = new RegExp(`^${type}\\s+(\\w+)\\s+as\\s+(\\w+)`, 'i');
+      const re3 = new RegExp(`^${type}\\s+"([^"]+)"`, 'i');
+      const re4 = new RegExp(`^${type}\\s+(\\w[\\w.]*)(?:\\s*\\{|\\s*$)`, 'i');
+      m = t.match(re1); if (m) { add(type, m[1], m[2]); break; }
+      m = t.match(re2); if (m) { add(type, m[1], m[2]); break; }
+      m = t.match(re3); if (m) { add(type, m[1], m[1]); break; }
+      m = t.match(re4); if (m) { add(type, m[1].trim(), m[1].trim()); break; }
+    }
+  }
+  return objects;
+}
+
+function countUsages(code, ref) {
+  const escaped = ref.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return (code.match(new RegExp(`\\b${escaped}\\b`, 'g')) || []).length;
+}
+
+function updateObjectsPanel() {
+  const code = document.getElementById('code').value;
+  const objects = parseObjects(code);
+  document.getElementById('obj-badge').textContent = objects.length;
+  const pills = document.getElementById('obj-pills');
+  if (!objects.length) {
+    pills.innerHTML = '<span class="obj-none">No objects detected</span>';
+    return;
+  }
+  pills.innerHTML = objects.map(obj => {
+    const count = countUsages(code, obj.ref);
+    const icon = OBJ_TYPE_ICON[obj.type] || obj.type;
+    return `<button class="obj-pill" data-ref="${obj.ref}" title="${obj.type}: ${obj.display}"><span class="obj-pill-type">${icon}</span>${obj.display}<span class="obj-pill-count">${count}</span></button>`;
+  }).join('');
+  pills.querySelectorAll('.obj-pill').forEach(btn =>
+    btn.addEventListener('click', () => insertSnippet(btn.dataset.ref))
+  );
+}
+
+function updateLineNumbers() {
+  const ta = document.getElementById('code');
+  const ln = document.getElementById('line-numbers');
+  const lineCount = ta.value.split('\n').length;
+  ln.innerHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join('');
+  ln.scrollTop = ta.scrollTop;
+}
+
+// --- Palette ---
 function buildPalette() {
   const tabsEl = document.getElementById('pal-tabs');
-  tabsEl.innerHTML = Object.keys(COMPONENTS).map(cat =>
+  const cats = [...Object.keys(COMPONENTS)];
+  tabsEl.innerHTML = cats.map(cat =>
     `<button class="pal-tab${cat === activePalTab ? ' active' : ''}" onclick="switchPalTab('${cat}', this)">${cat}</button>`
   ).join('');
-  renderPalItems(activePalTab);
+  renderPalContent(activePalTab);
 }
 
 function switchPalTab(cat, el) {
   activePalTab = cat;
   document.querySelectorAll('.pal-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  renderPalContent(cat);
+}
+
+function renderPalContent(cat) {
   renderPalItems(cat);
 }
 
@@ -878,8 +1041,100 @@ function renderPalItems(cat) {
   });
 }
 
+function renderObjectsTab() {
+  const el = document.getElementById('pal-items');
+  const objects = parseObjects(document.getElementById('code').value);
+  if (!objects.length) {
+    el.innerHTML = '<span class="obj-empty">No objects detected in current diagram</span>';
+    return;
+  }
+  el.innerHTML = `<div class="obj-list">${objects.map((obj, i) => `
+    <div class="obj-row">
+      <button class="obj-ref" data-ref="${obj.ref}" title="${obj.type}: ${obj.display}">${obj.ref}</button>
+      <span class="obj-type">${OBJ_TYPE_ICON[obj.type] || obj.type}</span>
+      <button class="obj-save" data-display="${obj.display}" data-ref="${obj.ref}" data-type="${obj.type}" title="Save to snippets">+</button>
+    </div>`).join('')}
+  </div>`;
+  el.querySelectorAll('.obj-ref').forEach(btn => btn.addEventListener('click', () => insertSnippet(btn.dataset.ref)));
+  el.querySelectorAll('.obj-save').forEach(btn => btn.addEventListener('click', () => {
+    const snippet = buildObjectSnippet(btn.dataset.type, btn.dataset.display, btn.dataset.ref);
+    addSnippet(btn.dataset.ref, snippet);
+  }));
+}
+
+function buildObjectSnippet(type, display, ref) {
+  if (display !== ref) return `${type} "${display}" as ${ref}\n`;
+  return `${type} ${ref}\n`;
+}
+
 function togglePalette() {
   document.getElementById('palette').classList.toggle('open');
+}
+
+// --- Snippet Library ---
+const SNIP_KEY = 'plantuml_snippets';
+
+function getSnippets() {
+  try { return JSON.parse(localStorage.getItem(SNIP_KEY) || '[]'); } catch { return []; }
+}
+
+function addSnippet(name, code) {
+  if (!name || !code) return;
+  const snippets = getSnippets().filter(s => s.name !== name);
+  snippets.unshift({ name, code, ts: Date.now() });
+  localStorage.setItem(SNIP_KEY, JSON.stringify(snippets));
+  renderSnipList();
+  showToast(`\u2713 Saved "${name}" to snippets`);
+}
+
+function deleteSnippet(name) {
+  const snippets = getSnippets().filter(s => s.name !== name);
+  localStorage.setItem(SNIP_KEY, JSON.stringify(snippets));
+  renderSnipList();
+}
+
+function saveSelectionAsSnippet() {
+  const ta = document.getElementById('code');
+  const name = document.getElementById('snip-name-input').value.trim();
+  const selected = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+  const code = selected || ta.value.trim();
+  if (!name) { document.getElementById('snip-name-input').focus(); showToast('\u2715 Enter a name first'); return; }
+  if (!code) { showToast('\u2715 Nothing to save'); return; }
+  addSnippet(name, code);
+  document.getElementById('snip-name-input').value = '';
+}
+
+function renderSnippetsTab() {
+  const snippets = getSnippets();
+  const el = document.getElementById('pal-items');
+  const listHtml = snippets.length
+    ? `<div class="snip-list">${snippets.map(s => `
+        <div class="snip-item">
+          <span class="snip-name" title="${s.code.replace(/"/g,'&quot;')}">${s.name}</span>
+          <button class="snip-del" data-insert="${s.name}" title="Insert">&#8594;</button>
+          <button class="snip-del" data-del="${s.name}" title="Delete">&#x2715;</button>
+        </div>`).join('')}
+      </div>`
+    : '<div class="snip-empty">No snippets — click + on detected objects, or save a selection</div>';
+  el.innerHTML = `
+    ${listHtml}
+    <div class="snip-save-row" style="margin-top:0.4rem">
+      <input class="snip-input" id="snip-name-input" placeholder="snippet name..." />
+      <button class="snip-add-btn" onclick="saveSelectionAsSnippet()">+ Save</button>
+    </div>`;
+  el.querySelectorAll('[data-insert]').forEach(btn => {
+    const snip = snippets.find(s => s.name === btn.dataset.insert);
+    if (snip) btn.addEventListener('click', () => insertSnippet(snip.code));
+  });
+  el.querySelectorAll('[data-del]').forEach(btn =>
+    btn.addEventListener('click', () => { deleteSnippet(btn.dataset.del); renderSnippetsTab(); }));
+}
+
+function renderSnipList() { if (activePalTab === 'snippets') renderSnippetsTab(); }
+
+function saveObjectToLibrary(ref, type, e) {
+  e && e.stopPropagation();
+  addSnippet(ref, `${type} ${ref}\n`);
 }
 
 function insertSnippet(snippet) {
@@ -1010,6 +1265,52 @@ function closeInstructionsOnOverlay(e) {
 
 function zoom(delta) { zoomLevel = Math.max(0.2, Math.min(5, zoomLevel + delta)); applyTransform(); }
 function resetView() { zoomLevel = 1; panX = 0; panY = 0; applyTransform(); }
+
+function fitToScreen() {
+  const img = document.getElementById('diagram-img');
+  const area = document.getElementById('preview-area');
+  if (!img || img.style.display === 'none') return;
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  if (!iw || !ih) return;
+  const aw = area.clientWidth - 40;
+  const ah = area.clientHeight - 40;
+  zoomLevel = Math.min(aw / iw, ah / ih, 1);
+  panX = 0; panY = 0;
+  applyTransform();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  const ta = document.getElementById('code');
+  const focused = document.activeElement;
+  // Ctrl+Enter → render
+  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); renderDiagram(); return; }
+  // Ctrl+S → download SVG
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); downloadDiagram('svg'); return; }
+  // Ctrl+Shift+F → fit to screen
+  if (e.ctrlKey && e.shiftKey && e.key === 'F') { e.preventDefault(); fitToScreen(); return; }
+  // Ctrl+/ → toggle comment on current line (only in textarea)
+  if (e.ctrlKey && e.key === '/' && focused === ta) {
+    e.preventDefault();
+    const start = ta.value.lastIndexOf('\n', ta.selectionStart - 1) + 1;
+    const lineStart = start;
+    const isCommented = ta.value.slice(lineStart, lineStart + 1) === "'";
+    if (isCommented) {
+      ta.value = ta.value.slice(0, lineStart) + ta.value.slice(lineStart + 1);
+      ta.selectionStart = ta.selectionEnd = Math.max(lineStart, ta.selectionStart - 1);
+    } else {
+      ta.value = ta.value.slice(0, lineStart) + "'" + ta.value.slice(lineStart);
+      ta.selectionStart = ta.selectionEnd = ta.selectionStart + 1;
+    }
+    updateHighlight();
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(renderDiagram, 1200);
+    return;
+  }
+  // Escape → exit diff mode
+  if (e.key === 'Escape' && diffMode) { exitDiff(); return; }
+});
 function applyTransform() {
   document.getElementById('diagram-img').style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
 }
