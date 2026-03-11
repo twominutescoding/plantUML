@@ -2,7 +2,7 @@
 
 A single-file, browser-based PlantUML live preview tool with no build steps and no dependencies (except pako.js via CDN).
 
-**[Open Live Preview →](https://htmlpreview.github.io/?https://github.com/twominutescoding/plantUML/blob/master/index.html)**
+**[Open Live Preview →](https://twominutescoding.github.io/plantUML/)**
 
 ---
 
