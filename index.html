@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://htmlpreview.github.io/?https://github.com/twominutescoding/plantUML/blob/master/index.html">
 
 <!-- Google verification -->
-<meta name="google-site-verification" content="44StekaDM6AWg0Nxava2cdWgUZmPRyLlclNFMG5hxsQ" />
+<meta name="google-site-verification" content="yxYgRdOXcNanKAS10Fap4BhujpN5_Scbdu-inVeFPM8" />
 
 <!-- Open Graph (Facebook, LinkedIn) -->
 <meta property="og:type" content="website">
@@ -1565,12 +1565,20 @@ async function renderDiagram() {
     }
     delete img.dataset.retried;
     loader.style.display = 'none';
-    let httpCode = '';
+    let msg = 'render error \u2014 check syntax';
     try {
       const r = await fetch(getUrl('svg', encoded));
-      httpCode = ` [HTTP ${r.status}]`;
-    } catch {}
-    status.textContent = `\u25CF render error${httpCode} \u2014 check syntax or try again`;
+      if (r.status === 200) {
+        msg = 'server returned invalid response \u2014 try again';
+      } else if (r.status >= 500 || r.status === 509) {
+        msg = `server error [HTTP ${r.status}] \u2014 try again`;
+      } else if (r.status >= 400) {
+        msg = `render error [HTTP ${r.status}] \u2014 check syntax`;
+      }
+    } catch {
+      msg = 'network error \u2014 check your connection';
+    }
+    status.textContent = `\u25CF ${msg}`;
     status.className = 'status-err';
     currentEncodedUrl = null;
   };
